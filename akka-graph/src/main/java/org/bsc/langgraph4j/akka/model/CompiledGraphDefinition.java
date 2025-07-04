@@ -1,0 +1,39 @@
+package org.bsc.langgraph4j.akka.model;
+
+import java.io.Serializable;
+import java.util.Map;
+import org.bsc.langgraph4j.akka.graph.GraphDefinition;
+
+/**
+ * CompiledGraphDefinition 封装编译后的主图或子图结构，包含节点定义、入口、终止节点等。
+ * 用于 Actor 执行时的静态图结构描述。
+ * 典型用法：GraphCompiler.compile(...) 生成后传递给 GraphManagerActor 或 SubgraphActor。
+ */
+public class CompiledGraphDefinition implements Serializable {
+    private final String graphId;
+    private final String entryNodeId;
+    private final Map<String, Object> nodeDefs;
+    private final String endNodeId;
+    private final GraphDefinition rawDefinition;
+
+    /**
+     * 构造函数。
+     * @param graphId 图唯一标识
+     * @param entryNodeId 入口节点ID
+     * @param nodeDefs 节点定义Map
+     * @param endNodeId 终止节点ID
+     * @param rawDefinition 原始图定义
+     */
+    public CompiledGraphDefinition(String graphId, String entryNodeId, Map<String, Object> nodeDefs, String endNodeId, GraphDefinition rawDefinition) {
+        this.graphId = graphId;
+        this.entryNodeId = entryNodeId;
+        this.nodeDefs = nodeDefs;
+        this.endNodeId = endNodeId;
+        this.rawDefinition = rawDefinition;
+    }
+    public String graphId() { return graphId; }
+    public String entryNodeId() { return entryNodeId; }
+    public Map<String, Object> nodeDefs() { return nodeDefs; }
+    public String endNodeId() { return endNodeId; }
+    public GraphDefinition rawDefinition() { return rawDefinition; }
+} 
