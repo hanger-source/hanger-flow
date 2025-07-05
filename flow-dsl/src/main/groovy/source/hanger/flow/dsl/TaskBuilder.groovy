@@ -32,6 +32,9 @@ class TaskBuilder implements TaskHint {
     @Internal
     /** 标记是否已定义onError，保证DSL唯一性 */
     private AtomicBoolean hasOnErrorDefined = new AtomicBoolean(false)
+    @Internal
+    /** 标记是否已定义run，保证DSL唯一性 */
+    private AtomicBoolean hasRunDefined = new AtomicBoolean(false)
 
     /**
      * 构造方法，初始化任务节点模型
@@ -64,7 +67,7 @@ class TaskBuilder implements TaskHint {
      */
     void onEnter(@DelegatesTo(value = FlowTaskEnterHandingAccess, strategy = DELEGATE_FIRST) Closure<?> enterClosure) {
         // 适配闭包的执行逻辑为java的实现
-        ensureSingleDefinition(hasOnEnterDefined, "Task.onEnter", {
+        ensureSingleDefinition(hasOnEnterDefined, "task.onEnter", {
             taskStepDefinition.enterHandingRunnable = new FlowTaskEnterHandingRunnable() {
                 @Override
                 void handle(FlowTaskEnterHandingAccess access) {
@@ -83,14 +86,16 @@ class TaskBuilder implements TaskHint {
      */
     void run(@DelegatesTo(value = FlowTaskRunAccess, strategy = DELEGATE_FIRST) Closure<?> runClosure) {
         // 适配闭包的执行逻辑为java的实现
-        taskStepDefinition.taskRunnable = new FlowTaskRunnable() {
-            @Override
-            void run(FlowTaskRunAccess access) {
-                runClosure.delegate = access
-                runClosure.resolveStrategy = DELEGATE_FIRST
-                runClosure.call()
+        ensureSingleDefinition(hasRunDefined, "task.run", {
+            taskStepDefinition.taskRunnable = new FlowTaskRunnable() {
+                @Override
+                void run(FlowTaskRunAccess access) {
+                    runClosure.delegate = access
+                    runClosure.resolveStrategy = DELEGATE_FIRST
+                    runClosure.call()
+                }
             }
-        }
+        })
     }
 
     /**
