@@ -57,7 +57,8 @@ mvn exec:java -Dexec.mainClass=source.hanger.Main
 - 修改 `demo.groovy`，即可自定义你的业务流程 DSL。
 
 ## 依赖
-- JDK 1.8+
+
+- JDK 17+
 - Maven 3.x
 - Groovy 3.0.9
 
