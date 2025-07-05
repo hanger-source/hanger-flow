@@ -6,17 +6,32 @@ import source.hanger.flow.dsl.hint.FlowHint
 
 import static groovy.lang.Closure.DELEGATE_FIRST
 
+/**
+ * 流程DSL入口类
+ * 提供flow { ... } 入口方法，定义流程的起点
+ * 包含流程特殊常量（END、START、ERROR等）
+ */
 class FlowDslEntry {
 
     @Internal
+    /** 流程结束标记常量 */
     public static String END = "__END__"
     @Internal
+    /** 流程起始标记常量 */
     public static String START = "__START__"
     @Internal
+    /** 流程错误标记常量 */
     public static String ERROR = "__ERROR__"
     @Internal
+    /** 流程全局虚拟节点常量 */
     public static String FLOW_GLOBAL_STEP = "__FLOW_GLOBAL_STEP__"
 
+    /**
+     * DSL入口方法：flow { ... }
+     * 解析Groovy DSL闭包，构建流程定义模型
+     * @param closure 流程DSL闭包
+     * @return FlowDefinition 流程定义模型
+     */
     static FlowDefinition flow(@DelegatesTo(value = FlowHint, strategy = DELEGATE_FIRST) Closure<?> closure) {
         def builder = new FlowBuilder()
         closure.delegate = builder
