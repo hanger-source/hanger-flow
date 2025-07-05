@@ -5,10 +5,13 @@ import java.io.IOException;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FlowEngineDemo {
 
     public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException {
+        Logger log = LoggerFactory.getLogger(FlowEngineDemo.class);
         try {
             Binding binding = new Binding();
             GroovyShell shell = new GroovyShell(binding);

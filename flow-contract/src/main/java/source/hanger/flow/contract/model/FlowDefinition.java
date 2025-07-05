@@ -144,6 +144,9 @@ public class FlowDefinition {
      * @return 步骤节点列表
      */
     public List<StepDefinition> getStepDefinitions() {
+        if (stepDefinitions == null) {
+            stepDefinitions = new ArrayList<>();
+        }
         return stepDefinitions;
     }
 }

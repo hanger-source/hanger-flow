@@ -65,4 +65,12 @@ public abstract class AbstractStepDefinition implements StepDefinition {
     public void setErrorTransition(Transition errorTransition) {
         this.errorTransition = errorTransition;
     }
+
+    /**
+     * 获取流转条件列表
+     * @return 流转条件列表
+     */
+    public List<Transition> getTransitions() {
+        return transition;
+    }
 }

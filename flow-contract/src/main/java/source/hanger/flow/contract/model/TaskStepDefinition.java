@@ -69,4 +69,13 @@ public class TaskStepDefinition extends AbstractStepDefinition {
     public void setTaskRunnable(FlowTaskRunnable taskRunnable) {
         this.taskRunnable = taskRunnable;
     }
+    
+    /**
+     * 获取任务执行逻辑
+     * 
+     * @return 任务执行逻辑
+     */
+    public FlowTaskRunnable getTaskRunnable() {
+        return taskRunnable;
+    }
 }

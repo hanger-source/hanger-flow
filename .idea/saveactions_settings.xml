@@ -8,7 +8,7 @@
         <option value="activateOnBatch" />
         <option value="reformatChangedCode" />
         <option value="rearrange" />
-        <option value="unqualifiedStaticMemberAccess" />
+        <option value="customUnqualifiedStaticMemberAccess" />
         <option value="useBlocks" />
         <option value="generateSerialVersionUID" />
         <option value="unnecessaryThis" />
