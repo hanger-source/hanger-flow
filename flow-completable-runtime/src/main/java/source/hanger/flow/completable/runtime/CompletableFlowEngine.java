@@ -84,19 +84,19 @@ public class CompletableFlowEngine {
     /**
      * 步骤错误处理策略
      */
-    private StepErrorHandler stepErrorHandler;
+    private final StepErrorHandler stepErrorHandler;
     /**
      * 流程错误处理策略
      */
-    private FlowErrorHandler flowErrorHandler;
+    private final FlowErrorHandler flowErrorHandler;
     /**
      * 流程生命周期处理器
      */
-    private FlowLifecycleHandler flowLifecycleHandler;
+    private final FlowLifecycleHandler flowLifecycleHandler;
     /**
      * 步骤生命周期处理器
      */
-    private StepLifecycleHandler stepLifecycleHandler;
+    private final StepLifecycleHandler stepLifecycleHandler;
 
     /**
      * 使用默认线程池创建引擎

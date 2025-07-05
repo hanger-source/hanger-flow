@@ -27,6 +27,7 @@
         <module>flow-completable-runtime</module>
         <module>flow-examples</module>
         <module>flow-visualizer</module>
+        <module>akka-graph</module>
     </modules>
 
     <dependencyManagement>
