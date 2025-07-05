@@ -1,0 +1,1 @@
+/Users/fuhangbo/.m2/repository/hanger/source/flow-contract/1.0.0-SNAPSHOT/flow-contract-1.0.0-SNAPSHOT.jar:/Users/fuhangbo/.m2/repository/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar:/Users/fuhangbo/.m2/repository/org/slf4j/slf4j-simple/2.0.13/slf4j-simple-2.0.13.jar:/Users/fuhangbo/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar
