@@ -1,4 +1,4 @@
-package source.hanger.flow.engine;
+package source.hanger.flow.example.basic;
 
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;

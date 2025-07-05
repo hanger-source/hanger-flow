@@ -12,6 +12,8 @@
     <file url="file://$PROJECT_DIR$/flow-dsl/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/flow-examples/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/flow-examples/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flow-visualizer/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flow-visualizer/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>

@@ -1,4 +1,4 @@
-package source.hanger.flow.engine;
+package source.hanger.flow.example.logging;
 
 import source.hanger.flow.contract.model.FlowDefinition;
 import source.hanger.flow.contract.model.TaskStepDefinition;
@@ -23,9 +23,10 @@ import java.util.concurrent.Executors;
  */
 public class EnhancedLoggingExample {
 
+    private static final Logger logger = LoggerFactory.getLogger(EnhancedLoggingExample.class);
+
     public static void main(String[] args) {
-        Logger log = LoggerFactory.getLogger(EnhancedLoggingExample.class);
-        log.info("=== 增强日志功能示例 ===\n");
+        logger.info("=== 增强日志功能示例 ===\n");
 
         // 创建线程池
         Executor executor = Executors.newFixedThreadPool(4);
@@ -39,11 +40,11 @@ public class EnhancedLoggingExample {
         // 执行流程
         CompletableFuture<Void> future = engine.execute(flow)
             .thenAccept(result -> {
-                log.info("\n=== 执行结果 ===");
-                log.info("状态: {}", result.getStatus());
-                log.info("参数: {}", result.getParams());
+                logger.info("\n=== 执行结果 ===");
+                logger.info("状态: {}", result.getStatus());
+                logger.info("参数: {}", result.getParams());
                 if (result.getError() != null) {
-                    log.error("错误: {}", result.getError().getMessage(), result.getError());
+                    logger.error("错误: {}", result.getError().getMessage(), result.getError());
                 }
             });
 
@@ -66,7 +67,7 @@ public class EnhancedLoggingExample {
             public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
                 try {
                     Thread.sleep(100); // 模拟任务执行
-                    System.out.println("    [任务执行] 初始化系统...");
+                    logger.info("    [任务执行] 初始化系统...");
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -118,7 +119,7 @@ public class EnhancedLoggingExample {
             public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
                 try {
                     Thread.sleep(50); // 模拟任务执行
-                    System.out.println("    [任务执行] 完成最终处理...");
+                    logger.info("    [任务执行] 完成最终处理...");
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }

@@ -1,4 +1,4 @@
-package source.hanger.flow.engine;
+package source.hanger.flow.example.complex;
 
 import source.hanger.flow.completable.runtime.CompletableFlowEngine;
 import source.hanger.flow.contract.model.FlowDefinition;
@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
  */
 public class MyComplexProcessTest {
 
-    private static final Logger log = LoggerFactory.getLogger(MyComplexProcessTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(MyComplexProcessTest.class);
 
     public static void main(String[] args) {
         MyComplexProcessTest test = new MyComplexProcessTest();
@@ -30,7 +30,7 @@ public class MyComplexProcessTest {
         // 运行基本测试
         test.runTest();
 
-        log.info("\n" + "=".repeat(50) + "\n");
+        logger.info("\n" + "=".repeat(50) + "\n");
 
         // 运行并发测试
         test.runConcurrentTest();
@@ -41,11 +41,11 @@ public class MyComplexProcessTest {
      */
     public void runTest() {
         try {
-            log.info("=== 开始MyComplexProcess.groovy完整测试 ===");
+            logger.info("=== 开始MyComplexProcess.groovy完整测试 ===");
 
             // 1. 创建复杂流程定义
             FlowDefinition flowDefinition = createMockComplexProcess();
-            log.info("流程定义创建完成，流程名称: {}", flowDefinition.getName());
+            logger.info("流程定义创建完成，流程名称: {}", flowDefinition.getName());
 
             // 2. 创建流程引擎
             ExecutorService executor = Executors.newFixedThreadPool(4);
@@ -58,7 +58,7 @@ public class MyComplexProcessTest {
             initialParams.put("userPhone", "13800138000");
             initialParams.put("userName", "测试用户");
 
-            log.info("开始执行复杂流程，订单ID: {}", initialParams.get("orderId"));
+            logger.info("开始执行复杂流程，订单ID: {}", initialParams.get("orderId"));
 
             // 4. 异步执行流程
             CompletableFuture<FlowResult> future = engine.execute(flowDefinition, initialParams);
@@ -67,17 +67,17 @@ public class MyComplexProcessTest {
             FlowResult result = future.get();
 
             // 6. 输出执行结果
-            log.info("复杂流程执行完成！");
-            log.info("执行状态: {}", result.getStatus());
-            log.info("执行ID: {}", result.getExecutionId());
-            log.info("最终参数: {}", result.getParams());
+            logger.info("复杂流程执行完成！");
+            logger.info("执行状态: {}", result.getStatus());
+            logger.info("执行ID: {}", result.getExecutionId());
+            logger.info("最终参数: {}", result.getParams());
 
             if (result.isSuccess()) {
-                log.info("✅ 复杂流程测试成功！流程正常执行完成");
+                logger.info("✅ 复杂流程测试成功！流程正常执行完成");
             } else {
-                log.error("❌ 复杂流程测试失败！执行状态: {}", result.getStatus());
+                logger.error("❌ 复杂流程测试失败！执行状态: {}", result.getStatus());
                 if (result.getError() != null) {
-                    log.error("错误详情: {}", result.getError());
+                    logger.error("错误详情: {}", result.getError());
                 }
             }
 
@@ -85,7 +85,7 @@ public class MyComplexProcessTest {
             executor.shutdown();
 
         } catch (Exception e) {
-            log.error("复杂流程测试执行失败: {}", e.getMessage(), e);
+            logger.error("复杂流程测试执行失败: {}", e.getMessage(), e);
         }
     }
 
@@ -129,51 +129,51 @@ public class MyComplexProcessTest {
         task.setTaskRunnable(new source.hanger.flow.contract.runtime.task.function.FlowTaskRunnable() {
             @Override
             public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
-                System.out.println("[TASK RUN] 执行任务: " + name);
+                logger.info("[TASK RUN] 执行任务: {}", name);
 
                 // 模拟业务逻辑
                 switch (name) {
                     case "订单初始化":
-                        System.out.println("准备订单数据，设置订单状态为待处理");
+                        logger.info("准备订单数据，设置订单状态为待处理");
                         break;
                     case "库存检查":
-                        System.out.println("检查所有订单商品的库存是否充足");
+                        logger.info("检查所有订单商品的库存是否充足");
                         break;
                     case "支付处理":
-                        System.out.println("调用支付网关完成支付");
+                        logger.info("调用支付网关完成支付");
                         break;
                     case "通知库存不足":
-                        System.out.println("通知用户商品库存不足，并终止订单流程");
+                        logger.info("通知用户商品库存不足，并终止订单流程");
                         break;
                     case "通知支付失败":
-                        System.out.println("通知用户支付失败，并引导重试或取消订单");
+                        logger.info("通知用户支付失败，并引导重试或取消订单");
                         break;
                     case "物流分配":
-                        System.out.println("为订单分配物流渠道，生成物流单号");
+                        logger.info("为订单分配物流渠道，生成物流单号");
                         break;
                     case "拣货打包":
-                        System.out.println("根据订单商品进行拣选和打包，更新库存");
+                        logger.info("根据订单商品进行拣选和打包，更新库存");
                         break;
                     case "发送订单确认邮件":
-                        System.out.println("通过邮件向用户发送订单确认信息");
+                        logger.info("通过邮件向用户发送订单确认信息");
                         break;
                     case "发送短信通知":
-                        System.out.println("通过短信通知用户订单支付成功");
+                        logger.info("通过短信通知用户订单支付成功");
                         break;
                     case "订单完成":
-                        System.out.println("流程成功结束，订单状态最终完成并更新到数据库");
+                        logger.info("流程成功结束，订单状态最终完成并更新到数据库");
                         break;
                     case "流程错误处理":
-                        System.out.println("捕获全局或未处理的流程错误，并进行统一处理");
+                        logger.info("捕获全局或未处理的流程错误，并进行统一处理");
                         break;
                     case "记录错误日志":
-                        System.out.println("记录任务级别的错误日志，通常比全局错误更细致");
+                        logger.info("记录任务级别的错误日志，通常比全局错误更细致");
                         break;
                     case "通知管理员":
-                        System.out.println("通知相关管理员流程实例失败或出现异常");
+                        logger.info("通知相关管理员流程实例失败或出现异常");
                         break;
                     default:
-                        System.out.println("执行通用任务逻辑");
+                        logger.info("执行通用任务逻辑");
                 }
 
                 // 模拟处理时间
@@ -183,7 +183,7 @@ public class MyComplexProcessTest {
                     Thread.currentThread().interrupt();
                 }
 
-                System.out.println("任务完成: " + name);
+                logger.info("任务完成: {}", name);
                 access.log("任务执行完成: " + name);
             }
         });
@@ -196,7 +196,7 @@ public class MyComplexProcessTest {
      */
     public void runConcurrentTest() {
         try {
-            System.out.println("=== 开始MyComplexProcess并发测试 ===");
+            logger.info("=== 开始MyComplexProcess并发测试 ===");
 
             // 创建复杂流程定义
             FlowDefinition flowDefinition = createMockComplexProcess();
@@ -219,7 +219,7 @@ public class MyComplexProcessTest {
 
                 futures[i] = engine.execute(flowDefinition, initialParams)
                     .thenApply(result -> {
-                        System.out.println("并发任务 " + orderIndex + " 完成，订单ID: " + initialParams.get("orderId"));
+                        logger.info("并发任务 {} 完成，订单ID: {}", orderIndex, initialParams.get("orderId"));
                         return result;
                     });
             }
@@ -227,19 +227,20 @@ public class MyComplexProcessTest {
             // 等待所有任务完成
             CompletableFuture.allOf(futures).join();
 
-            System.out.println("所有并发任务执行完成！");
+            logger.info("所有并发任务执行完成！");
 
             // 输出结果
             for (int i = 0; i < futures.length; i++) {
                 FlowResult result = futures[i].get();
-                System.out.println(
-                    "任务 " + i + " 结果: 状态=" + result.getStatus() + ", 执行ID=" + result.getExecutionId());
+                logger.info(
+                    "任务 {} 结果: 状态={}, 执行ID={}",
+                    i, result.getStatus(), result.getExecutionId());
             }
 
             executor.shutdown();
 
         } catch (Exception e) {
-            System.err.println("并发测试执行失败: " + e.getMessage());
+            logger.error("并发测试执行失败: {}", e.getMessage());
             e.printStackTrace();
         }
     }

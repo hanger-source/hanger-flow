@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 流程执行日志工具类
  * <p>
@@ -14,6 +17,7 @@ public class FlowLogger {
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final AtomicLong LOG_SEQUENCE = new AtomicLong(0);
+    private static final Logger logger = LoggerFactory.getLogger(FlowLogger.class);
 
     /**
      * 新版统一日志输出方法，支持flowName、version、stepName
@@ -26,9 +30,9 @@ public class FlowLogger {
             ctx.flowName, ctx.version, ctx.executionId, ctx.stepName, timestamp, sequence, threadName, level.getEmoji(),
             message);
         if (level == Level.ERROR) {
-            System.err.println(logMessage);
+            logger.error(logMessage);
         } else {
-            System.out.println(logMessage);
+            logger.info(logMessage);
         }
     }
 

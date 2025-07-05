@@ -13,6 +13,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutionException;
 import java.io.Serializable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 模块结构测试
@@ -24,6 +26,8 @@ import java.io.Serializable;
  */
 public class ModuleStructureTest {
     
+    private static final Logger logger = LoggerFactory.getLogger(ModuleStructureTest.class);
+    
     public static void main(String[] args) {
         ModuleStructureTest test = new ModuleStructureTest();
         test.testModuleStructure();
@@ -33,7 +37,7 @@ public class ModuleStructureTest {
      * 测试模块结构
      */
     public void testModuleStructure() {
-        System.out.println("=== 模块结构测试 ===");
+        logger.info("=== 模块结构测试 ===");
         
         try {
             // 测试基础功能
@@ -42,10 +46,10 @@ public class ModuleStructureTest {
             // 测试模块职责分离
             testModuleSeparation();
             
-            System.out.println("✅ 模块结构测试通过");
+            logger.info("✅ 模块结构测试通过");
             
         } catch (Exception e) {
-            System.err.println("❌ 模块结构测试失败: " + e.getMessage());
+            logger.error("❌ 模块结构测试失败: {}", e.getMessage());
             e.printStackTrace();
         }
     }
@@ -54,7 +58,7 @@ public class ModuleStructureTest {
      * 测试基础功能
      */
     private void testBasicFunctionality() {
-        System.out.println("测试基础功能...");
+        logger.info("测试基础功能...");
         
         // 创建引擎
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -76,7 +80,7 @@ public class ModuleStructureTest {
         }
         
         if (result.isSuccess()) {
-            System.out.println("✅ 基础功能正常");
+            logger.info("✅ 基础功能正常");
         } else {
             throw new RuntimeException("基础功能异常: " + result.getStatus());
         }
@@ -88,18 +92,18 @@ public class ModuleStructureTest {
      * 测试模块职责分离
      */
     private void testModuleSeparation() {
-        System.out.println("测试模块职责分离...");
+        logger.info("测试模块职责分离...");
         
         // 验证flow-contract模块职责
-        System.out.println("- flow-contract: 契约接口定义");
+        logger.info("- flow-contract: 契约接口定义");
         
         // 验证flow-core模块职责
-        System.out.println("- flow-core: 核心运行时组件");
+        logger.info("- flow-core: 核心运行时组件");
         
         // 验证flow-completable-runtime模块职责
-        System.out.println("- flow-completable-runtime: CompletableFuture实现");
+        logger.info("- flow-completable-runtime: CompletableFuture实现");
         
-        System.out.println("✅ 模块职责分离合理");
+        logger.info("✅ 模块职责分离合理");
     }
     
     /**
@@ -118,7 +122,7 @@ public class ModuleStructureTest {
         task.setTaskRunnable(new FlowTaskRunnable() {
             @Override
             public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
-                System.out.println("[ModuleStructureTest] 执行结构测试任务");
+                logger.info("[ModuleStructureTest] 执行结构测试任务");
                 access.log("模块结构测试任务执行完成");
             }
         });

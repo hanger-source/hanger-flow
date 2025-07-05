@@ -21,11 +21,12 @@
     </properties>
 
     <modules>
-        <module>flow-core</module>
         <module>flow-contract</module>
+        <module>flow-core</module>
         <module>flow-dsl</module>
         <module>flow-completable-runtime</module>
         <module>flow-examples</module>
+        <module>flow-visualizer</module>
     </modules>
 
     <dependencyManagement>

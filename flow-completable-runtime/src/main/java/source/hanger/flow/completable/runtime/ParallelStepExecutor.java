@@ -32,11 +32,7 @@ public class ParallelStepExecutor implements StepExecutor {
         String stepName = parallelStep.getName();
         String executionId = context.getExecutionId();
 
-        FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(
-            context.getFlowDefinition().getName(),
-            context.getFlowDefinition().getVersion(),
-            parallelStep.getName(), null),
-            "🔄 并行执行 [" + parallelStep.getBranches().size() + " 个分支]");
+        // FlowLogger.log(FlowLogger.Level.INFO, ctx, "🔄 并行执行 [" + parallelStep.getBranches().size() + " 个分支]");
 
         // 收集所有分支的Future
         Map<String, CompletableFuture<FlowResult>> branchFutures = new HashMap<>();

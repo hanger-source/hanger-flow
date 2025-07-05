@@ -13,16 +13,31 @@ import source.hanger.flow.core.util.FlowLogger;
 public class DefaultStepLifecycleHandler implements StepLifecycleHandler {
     @Override
     public void onStepStart(StepDefinition step, FlowExecutionContext context) {
-        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogger.FlowLogContext("LIFECYCLE", null, context.getExecutionId(), step.getName()), "步骤生命周期: 开始执行");
+        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogger.FlowLogContext(
+            context.getFlowDefinition().getName(),
+            context.getFlowDefinition().getVersion(),
+            context.getExecutionId(),
+            step.getName()),
+            "步骤生命周期: 开始执行");
     }
 
     @Override
     public void onStepComplete(StepDefinition step, FlowExecutionContext context) {
-        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogger.FlowLogContext("LIFECYCLE", null, context.getExecutionId(), step.getName()), "步骤生命周期: 执行完成");
+        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogger.FlowLogContext(
+            context.getFlowDefinition().getName(),
+            context.getFlowDefinition().getVersion(),
+            context.getExecutionId(),
+            step.getName()),
+            "步骤生命周期: 执行完成");
     }
 
     @Override
     public void onStepError(StepDefinition step, FlowExecutionContext context, Exception error) {
-        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogger.FlowLogContext("LIFECYCLE", null, context.getExecutionId(), step.getName()), "步骤生命周期: 执行错误 - " + error.getMessage());
+        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogger.FlowLogContext(
+            context.getFlowDefinition().getName(),
+            context.getFlowDefinition().getVersion(),
+            context.getExecutionId(),
+            step.getName()),
+            "步骤生命周期: 执行错误 - " + error.getMessage());
     }
 } 

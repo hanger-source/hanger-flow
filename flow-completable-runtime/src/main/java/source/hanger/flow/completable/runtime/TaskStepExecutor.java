@@ -33,11 +33,7 @@ public class TaskStepExecutor implements StepExecutor {
         String stepName = taskStep.getName();
         String executionId = context.getExecutionId();
         
-        FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(
-            context.getFlowDefinition().getName(),
-            context.getFlowDefinition().getVersion(),
-            stepName, null),
-            "⚡ 任务执行: 开始执行任务逻辑");
+        // FlowLogger.log(FlowLogger.Level.INFO, ctx, "⚡ 任务执行: 开始执行任务逻辑");
 
         return CompletableFuture.supplyAsync(() -> {
             // 执行任务进入回调（onEnter）

@@ -169,7 +169,7 @@ public class CompletableFlowEngine {
         String executionId = generateExecutionId(flowDefinition);
         FlowExecutionContext context = new FlowExecutionContext(executionId, flowDefinition, initialParams);
 
-        log.info("🚀 流程开始执行");
+        FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "流程开始执行"), "🚀 流程开始执行");
 
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -179,11 +179,11 @@ public class CompletableFlowEngine {
                 // 执行所有步骤
                 FlowResult result = executeSteps(flowDefinition, context);
 
-                log.info("🎉 流程执行完成");
+                FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "流程执行完成"), "🎉 流程执行完成");
                 return result;
 
             } catch (Exception e) {
-                log.error("💥 流程执行错误: {}", e.getMessage());
+                FlowLogger.log(FlowLogger.Level.ERROR, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "流程执行错误: " + e.getMessage()), "💥 流程执行错误: " + e.getMessage());
                 return handleFlowError(flowDefinition, context, e);
             }
         }, executor);
@@ -284,7 +284,7 @@ public class CompletableFlowEngine {
             String stepType = getStepType(step);
             String executionId = context.getExecutionId();
 
-            log.info("▶️ 步骤开始执行 [{}] [stepName={}] [executionId={}] [params={}]", stepType, stepName, executionId, context.getParams());
+            FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "步骤开始执行"), "▶️ 步骤开始执行");
 
             // 步骤开始生命周期
             stepLifecycleHandler.onStepStart(step, context);
@@ -296,13 +296,13 @@ public class CompletableFlowEngine {
                 return executorImpl.execute(step, context, executor)
                     .thenApply(result -> {
                         updateExecutionState(stepName, FlowStepStatus.COMPLETED);
-                        log.info("✅ 步骤执行完成 [{}]", stepType);
+                        FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "步骤执行完成"), "✅ 步骤执行完成");
                         // 步骤完成生命周期
                         stepLifecycleHandler.onStepComplete(step, context);
                         return executeNextSteps(step, result);
                     })
                     .exceptionally(e -> {
-                        log.error("❌ 步骤执行错误 [{}] : {}", stepType, e.getMessage());
+                        FlowLogger.log(FlowLogger.Level.ERROR, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "步骤执行错误 : " + e.getMessage()), "❌ 步骤执行错误 : " + e.getMessage());
                         updateExecutionState(stepName, FlowStepStatus.ERROR);
                         // 步骤错误生命周期
                         stepLifecycleHandler.onStepError(step, context,
@@ -316,12 +316,12 @@ public class CompletableFlowEngine {
                     updateExecutionState(stepName, FlowStepStatus.RUNNING);
                     FlowResult result = executeStepByType(step);
                     updateExecutionState(stepName, FlowStepStatus.COMPLETED);
-                    log.info("✅ 步骤执行完成 [{}]", stepType);
+                    FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "步骤执行完成"), "✅ 步骤执行完成");
                     // 步骤完成生命周期
                     stepLifecycleHandler.onStepComplete(step, context);
                     return executeNextSteps(step, result);
                 } catch (Exception e) {
-                    log.error("❌ 步骤执行错误 [{}] : {}", stepType, e.getMessage());
+                    FlowLogger.log(FlowLogger.Level.ERROR, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "步骤执行错误 : " + e.getMessage()), "❌ 步骤执行错误 : " + e.getMessage());
                     updateExecutionState(stepName, FlowStepStatus.ERROR);
                     // 步骤错误生命周期
                     stepLifecycleHandler.onStepError(step, context, e);
@@ -387,7 +387,7 @@ public class CompletableFlowEngine {
          */
         private FlowResult executeParallelStep(ParallelStepDefinition parallelStep) {
             String stepName = parallelStep.getName();
-            log.info("执行并行步骤: {}", stepName);
+            FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "执行并行步骤: " + stepName), "执行并行步骤: " + stepName);
 
             // 收集所有分支的Future
             Map<String, CompletableFuture<FlowResult>> branchFutures = new HashMap<>();
@@ -427,7 +427,7 @@ public class CompletableFlowEngine {
          */
         private FlowResult executeAsyncStep(AsyncStepDefinition asyncStep) {
             String stepName = asyncStep.getName();
-            log.info("执行异步步骤: {}", stepName);
+            FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "执行异步步骤: " + stepName), "执行异步步骤: " + stepName);
 
             // 异步执行分支，不等待完成
             List<String> branchNames = asyncStep.getBranchNames();
@@ -436,7 +436,7 @@ public class CompletableFlowEngine {
                     try {
                         executeStepByName(branchName).join();
                     } catch (Exception e) {
-                        log.error("异步分支执行异常: {}, {}", branchName, e);
+                        FlowLogger.log(FlowLogger.Level.ERROR, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "异步分支执行异常: " + e.getMessage()), "异步分支执行异常: " + e.getMessage());
                     }
                 }, executor);
             }
@@ -448,7 +448,7 @@ public class CompletableFlowEngine {
          * 执行任务进入回调
          */
         private void executeTaskEnter(TaskStepDefinition taskStep) {
-            log.info("[TASK ENTER] 任务进入回调: {}", taskStep.getName());
+            FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "[TASK ENTER] 任务进入回调: " + taskStep.getName()), "[TASK ENTER] 任务进入回调: " + taskStep.getName());
         }
 
         /**
@@ -487,7 +487,7 @@ public class CompletableFlowEngine {
                         matched = false;
                     }
                 }
-                log.info("[Transition] nextStep='{}', predicate='{}', matched={}", t.nextStepName(), predicateDesc, matched);
+                FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(context.getFlowDefinition().getName(), context.getFlowDefinition().getVersion(), context.getExecutionId(), "Transition] nextStep='" + t.nextStepName() + "', predicate='" + predicateDesc + "', matched=" + matched), "[Transition] nextStep='" + t.nextStepName() + "', predicate='" + predicateDesc + "', matched=" + matched);
                 if (matched) {
                     String nextStepName = t.nextStepName();
                     if ("__END__".equals(nextStepName)) {

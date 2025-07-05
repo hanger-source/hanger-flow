@@ -29,11 +29,7 @@ public class AsyncStepExecutor implements StepExecutor {
         String stepName = asyncStep.getName();
         String executionId = context.getExecutionId();
         
-        FlowLogger.log(FlowLogger.Level.INFO, new FlowLogger.FlowLogContext(
-            context.getFlowDefinition().getName(),
-            context.getFlowDefinition().getVersion(),
-            asyncStep.getName(), null),
-            "⚡ 异步执行 [" + asyncStep.getBranchNames().size() + " 个分支]");
+        // FlowLogger.log(FlowLogger.Level.INFO, ctx, "⚡ 异步执行 [" + asyncStep.getBranchNames().size() + " 个分支]");
 
         // 异步执行分支，不等待完成
         List<String> branchNames = asyncStep.getBranchNames();
