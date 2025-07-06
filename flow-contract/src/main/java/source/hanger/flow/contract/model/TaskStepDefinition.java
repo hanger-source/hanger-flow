@@ -1,81 +1,122 @@
 package source.hanger.flow.contract.model;
 
-import source.hanger.flow.contract.runtime.task.function.FlowTaskEnterHandingRunnable;
-import source.hanger.flow.contract.runtime.task.function.FlowTaskErrorHandingRunnable;
-import source.hanger.flow.contract.runtime.task.function.FlowTaskRunnable;
+import source.hanger.flow.contract.runtime.common.FlowClosure;
 
 /**
- * 任务步骤定义类
- * 继承自AbstractStepDefinition，定义了具体的任务执行逻辑
- * 包含任务执行、进入处理和错误处理三个主要生命周期方法
+ * 任务步骤定义
+ * 定义了任务步骤的基本属性和执行逻辑
  */
 public class TaskStepDefinition extends AbstractStepDefinition {
-    /** 任务执行逻辑 */
-    private FlowTaskRunnable taskRunnable;
-    /**
-     * 任务进入时的逻辑
-     * 只有一次
-     */
-    private FlowTaskEnterHandingRunnable enterHandingRunnable;
-    /**
-     * 任务异常处理逻辑
-     * 只有一次
-     */
-    private FlowTaskErrorHandingRunnable errorHandingRunnable;
+    private FlowClosure taskClosure;
+    private FlowClosure enterHandlingClosure;
+    private FlowClosure errorHandlingClosure;
+    /** 是否支持流式输出 */
+    private boolean streamingSupported = false;
+    /** 输出类型 */
+    private Class<?> outputType = Object.class;
 
-    /**
-     * 获取任务进入处理逻辑
-     * 
-     * @return 任务进入处理逻辑
-     */
-    public FlowTaskEnterHandingRunnable getEnterHandingRunnable() {
-        return enterHandingRunnable;
+    public TaskStepDefinition() {
+        super();
+    }
+
+    public TaskStepDefinition(String name) {
+        super();
+        setName(name);
+    }
+
+    public TaskStepDefinition(String name, String description) {
+        super();
+        setName(name);
+        setDescription(description);
     }
 
     /**
-     * 设置任务进入处理逻辑
-     * 
-     * @param enterHandingRunnable 任务进入处理逻辑
+     * 获取任务执行闭包
      */
-    public void setEnterHandingRunnable(
-        FlowTaskEnterHandingRunnable enterHandingRunnable) {
-        this.enterHandingRunnable = enterHandingRunnable;
+    public FlowClosure getTaskClosure() {
+        return taskClosure;
     }
 
     /**
-     * 获取任务错误处理逻辑
-     * 
-     * @return 任务错误处理逻辑
+     * 设置任务执行闭包
      */
-    public FlowTaskErrorHandingRunnable getErrorHandingRunnable() {
-        return errorHandingRunnable;
+    public void setTaskClosure(FlowClosure taskClosure) {
+        this.taskClosure = taskClosure;
     }
 
     /**
-     * 设置任务错误处理逻辑
-     * 
-     * @param errorHandingRunnable 任务错误处理逻辑
+     * 获取任务进入处理闭包
      */
-    public void setErrorHandingRunnable(
-        FlowTaskErrorHandingRunnable errorHandingRunnable) {
-        this.errorHandingRunnable = errorHandingRunnable;
+    public FlowClosure getEnterHandlingClosure() {
+        return enterHandlingClosure;
     }
 
     /**
-     * 设置任务执行逻辑
-     * 
-     * @param taskRunnable 任务执行逻辑
+     * 设置任务进入处理闭包
      */
-    public void setTaskRunnable(FlowTaskRunnable taskRunnable) {
-        this.taskRunnable = taskRunnable;
+    public void setEnterHandlingClosure(FlowClosure enterHandlingClosure) {
+        this.enterHandlingClosure = enterHandlingClosure;
     }
-    
+
     /**
-     * 获取任务执行逻辑
-     * 
-     * @return 任务执行逻辑
+     * 获取任务错误处理闭包
      */
-    public FlowTaskRunnable getTaskRunnable() {
-        return taskRunnable;
+    public FlowClosure getErrorHandlingClosure() {
+        return errorHandlingClosure;
+    }
+
+    /**
+     * 设置任务错误处理闭包
+     */
+    public void setErrorHandlingClosure(FlowClosure errorHandlingClosure) {
+        this.errorHandlingClosure = errorHandlingClosure;
+    }
+
+    // 兼容性方法，保持向后兼容
+    public void setTaskRunnable(FlowClosure taskClosure) {
+        this.taskClosure = taskClosure;
+    }
+
+    public FlowClosure getTaskRunnable() {
+        return taskClosure;
+    }
+
+    public void setEnterHandingRunnable(FlowClosure enterHandlingClosure) {
+        this.enterHandlingClosure = enterHandlingClosure;
+    }
+
+    public FlowClosure getEnterHandingRunnable() {
+        return enterHandlingClosure;
+    }
+
+    public void setErrorHandingRunnable(FlowClosure errorHandlingClosure) {
+        this.errorHandlingClosure = errorHandlingClosure;
+    }
+
+    public FlowClosure getErrorHandingRunnable() {
+        return errorHandlingClosure;
+    }
+
+    @Override
+    public boolean isStreamingSupported() {
+        return streamingSupported;
+    }
+
+    public void setStreamingSupported(boolean streamingSupported) {
+        this.streamingSupported = streamingSupported;
+    }
+
+    @Override
+    public Class<?> getOutputType() {
+        return outputType;
+    }
+
+    public void setOutputType(Class<?> outputType) {
+        this.outputType = outputType;
+    }
+
+    @Override
+    public StepType getStepType() {
+        return StepType.TASK;
     }
 }

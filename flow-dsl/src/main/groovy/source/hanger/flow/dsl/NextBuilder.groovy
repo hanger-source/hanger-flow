@@ -4,7 +4,11 @@ import source.hanger.flow.contract.model.StepDefinition
 import source.hanger.flow.contract.model.Transition
 import source.hanger.flow.dsl.hint.NextHint
 
-import static source.hanger.flow.util.ClosureUtils.defaultFlowRuntimePredicate
+import source.hanger.flow.contract.runtime.common.FlowRuntimePredicate
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess
+import source.hanger.flow.util.ClosureUtils
+
+import static source.hanger.flow.util.ClosureUtils.*
 
 /**
  * 条件跳转DSL构建器
@@ -34,7 +38,7 @@ class NextBuilder implements NextHint {
      */
     void to(String nextStepName) {
         // 适配闭包的执行逻辑为java的实现
-        def transition = new Transition(defaultFlowRuntimePredicate(booleanClosure), nextStepName)
+        def transition = new Transition(toFlowRuntimePredicate(booleanClosure), nextStepName)
         preStepDefinition.addTransition(transition)
     }
 }

@@ -37,4 +37,19 @@ public class AsyncStepDefinition extends AbstractStepDefinition {
     public List<String> getBranchNames() {
         return branchNames;
     }
+
+    @Override
+    public boolean isStreamingSupported() {
+        return false;
+    }
+
+    @Override
+    public Class<?> getOutputType() {
+        return Object.class;
+    }
+
+    @Override
+    public StepType getStepType() {
+        return StepType.ASYNC;
+    }
 }

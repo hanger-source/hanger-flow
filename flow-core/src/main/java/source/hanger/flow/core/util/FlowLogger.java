@@ -19,10 +19,17 @@ public class FlowLogger {
     private static final AtomicLong LOG_SEQUENCE = new AtomicLong(0);
     private static final Logger logger = LoggerFactory.getLogger(FlowLogger.class);
 
+    public static void info(FlowLogContext ctx, String message, Object... args) {
+        log(Level.INFO, ctx, message, args);
+    }
+
+    public static void error(FlowLogContext ctx, String message, Object... args) {
+        log(Level.ERROR, ctx, message, args);
+    }
     /**
      * 新版统一日志输出方法，支持flowName、version、stepName
      */
-    public static void log(Level level, FlowLogContext ctx, String message) {
+    public static void log(Level level, FlowLogContext ctx, String message, Object... args) {
         String timestamp = LocalDateTime.now().format(FlowLogger.TIME_FORMATTER);
         String sequence = String.format("%06d", FlowLogger.LOG_SEQUENCE.incrementAndGet());
         String threadName = Thread.currentThread().getName();
@@ -30,9 +37,9 @@ public class FlowLogger {
             ctx.flowName, ctx.version, ctx.executionId, ctx.stepName, timestamp, sequence, threadName, level.getEmoji(),
             message);
         if (level == Level.ERROR) {
-            logger.error(logMessage);
+            logger.error(logMessage, args);
         } else {
-            logger.info(logMessage);
+            logger.info(logMessage, args);
         }
     }
 
@@ -57,9 +64,4 @@ public class FlowLogger {
         }
     }
 
-    /**
-     * 日志上下文对象，统一封装日志所需所有元信息
-     */
-    public record FlowLogContext(String flowName, String version, String executionId, String stepName) {
-    }
-} 
+}

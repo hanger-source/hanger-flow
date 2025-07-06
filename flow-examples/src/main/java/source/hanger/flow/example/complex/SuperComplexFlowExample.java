@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import source.hanger.flow.completable.runtime.CompletableFlowEngine;
 import source.hanger.flow.contract.model.FlowDefinition;
-import source.hanger.flow.core.runtime.FlowResult;
+import source.hanger.flow.core.runtime.execution.FlowResult;
 
 import java.io.File;
 import java.io.Serializable;
@@ -43,7 +43,7 @@ public class SuperComplexFlowExample {
             }
             ExecutorService executor = Executors.newFixedThreadPool(8);
             CompletableFlowEngine engine = new CompletableFlowEngine(executor);
-            Map<String, Serializable> initialParams = new HashMap<>();
+            Map<String, Object> initialParams = new HashMap<>();
             initialParams.put("orderId", "ORDER_SUPER_" + System.currentTimeMillis());
             initialParams.put("userEmail", "superuser@example.com");
             initialParams.put("userPhone", "13900000000");
@@ -53,7 +53,7 @@ public class SuperComplexFlowExample {
             logger.info("流程执行完成！");
             logger.info("执行状态: {}", result.getStatus());
             logger.info("执行ID: {}", result.getExecutionId());
-            logger.info("最终参数: {}", result.getParams());
+            logger.info("最终输入: {}", result.getAttributes());
             if (result.isError()) {
                 logger.error("执行失败，错误: {}", result.getError());
             }

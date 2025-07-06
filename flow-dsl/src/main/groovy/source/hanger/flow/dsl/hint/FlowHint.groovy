@@ -1,8 +1,7 @@
 package source.hanger.flow.dsl.hint
 
-import groovy.transform.CompileStatic
-import source.hanger.flow.contract.runtime.flow.access.FlowEnterHandlingAccess
-import source.hanger.flow.contract.runtime.flow.access.FlowErrorHandlingAccess
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess
+import source.hanger.flow.contract.runtime.common.FlowClosure
 
 import static groovy.lang.Closure.DELEGATE_FIRST
 
@@ -34,7 +33,6 @@ import static groovy.lang.Closure.DELEGATE_FIRST
  *   - 便于后续扩展新的DSL语法（如subflow、event等）
  *   - 强制所有DSL实现都必须支持这些顶级语法
  */
-@CompileStatic
 trait FlowHint {
     /**
      * DSL关键词：version
@@ -69,7 +67,7 @@ trait FlowHint {
      * 定义流程进入时的全局处理逻辑
      * @param c 处理闭包，委托为FlowEnterHandlingAccess
      */
-    abstract void onEnter(@DelegatesTo(value = FlowEnterHandlingAccess, strategy = DELEGATE_FIRST) Closure<?> c)
+    abstract void onEnter(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> c)
 
     /**
      * DSL关键词：onError
@@ -77,7 +75,7 @@ trait FlowHint {
      * @param c 错误处理闭包，委托为FlowErrorHandlingAccess
      * @return NextHint 用于链式指定错误跳转目标
      */
-    abstract NextHint onError(@DelegatesTo(value = FlowErrorHandlingAccess, strategy = DELEGATE_FIRST) Closure<?> c)
+    abstract NextHint onError(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> c)
 
     /**
      * DSL关键词：task

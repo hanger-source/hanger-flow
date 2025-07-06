@@ -73,4 +73,14 @@ public abstract class AbstractStepDefinition implements StepDefinition {
     public List<Transition> getTransitions() {
         return transition;
     }
+
+    @Override
+    public boolean isStreamingSupported() {
+        return false;
+    }
+
+    @Override
+    public Class<?> getOutputType() {
+        return Object.class;
+    }
 }

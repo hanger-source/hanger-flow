@@ -5,11 +5,12 @@ import source.hanger.flow.contract.model.TaskStepDefinition;
 import source.hanger.flow.contract.model.ParallelStepDefinition;
 import source.hanger.flow.contract.model.AsyncStepDefinition;
 import source.hanger.flow.contract.model.Branch;
-import source.hanger.flow.contract.runtime.task.function.FlowTaskRunnable;
-import source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicate;
+import source.hanger.flow.contract.runtime.common.FlowClosure;
+import source.hanger.flow.contract.runtime.common.FlowRuntimePredicate;
 import source.hanger.flow.completable.runtime.CompletableFlowEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -42,7 +43,7 @@ public class EnhancedLoggingExample {
             .thenAccept(result -> {
                 logger.info("\n=== 执行结果 ===");
                 logger.info("状态: {}", result.getStatus());
-                logger.info("参数: {}", result.getParams());
+                logger.info("输入: {}", result.getAttributes());
                 if (result.getError() != null) {
                     logger.error("错误: {}", result.getError().getMessage(), result.getError());
                 }
@@ -62,12 +63,12 @@ public class EnhancedLoggingExample {
         // 任务步骤1
         TaskStepDefinition task1 = new TaskStepDefinition();
         task1.setName("初始化任务");
-        task1.setTaskRunnable(new FlowTaskRunnable() {
+        task1.setTaskRunnable(new FlowClosure() {
             @Override
-            public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
+            public void call(FlowRuntimeExecuteAccess access) {
                 try {
                     Thread.sleep(100); // 模拟任务执行
-                    logger.info("    [任务执行] 初始化系统...");
+                    EnhancedLoggingExample.logger.info("    [任务执行] 初始化系统...");
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -82,8 +83,7 @@ public class EnhancedLoggingExample {
         Branch branch1 = new Branch(
             new FlowRuntimePredicate() {
                 @Override
-                public boolean test(
-                    source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicateAccess access) {
+                public boolean test(FlowRuntimeExecuteAccess access) {
                     return true; // 总是执行
                 }
             },
@@ -94,8 +94,7 @@ public class EnhancedLoggingExample {
         Branch branch2 = new Branch(
             new FlowRuntimePredicate() {
                 @Override
-                public boolean test(
-                    source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicateAccess access) {
+                public boolean test(FlowRuntimeExecuteAccess access) {
                     return true; // 总是执行
                 }
             },
@@ -114,12 +113,12 @@ public class EnhancedLoggingExample {
         // 任务步骤2
         TaskStepDefinition task2 = new TaskStepDefinition();
         task2.setName("最终任务");
-        task2.setTaskRunnable(new FlowTaskRunnable() {
+        task2.setTaskRunnable(new FlowClosure() {
             @Override
-            public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
+            public void call(FlowRuntimeExecuteAccess access) {
                 try {
                     Thread.sleep(50); // 模拟任务执行
-                    logger.info("    [任务执行] 完成最终处理...");
+                    EnhancedLoggingExample.logger.info("    [任务执行] 完成最终处理...");
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }

@@ -1,7 +1,5 @@
 package source.hanger.flow.dsl.hint
 
-import groovy.transform.CompileStatic
-
 /**
  * NextHint 是条件跳转/错误跳转的语法提示接口（trait）
  * <p>
@@ -20,7 +18,6 @@ import groovy.transform.CompileStatic
  *   - 只允许出现to方法，明确跳转目标
  *   - 便于后续扩展跳转属性（如条件优先级、标签等）
  */
-@CompileStatic
 trait NextHint {
     /**
      * DSL关键词：to

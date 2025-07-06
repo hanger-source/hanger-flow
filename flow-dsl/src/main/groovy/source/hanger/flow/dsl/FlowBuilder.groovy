@@ -6,16 +6,14 @@ import source.hanger.flow.contract.model.AsyncStepDefinition
 import source.hanger.flow.contract.model.FlowDefinition
 import source.hanger.flow.contract.model.ParallelStepDefinition
 import source.hanger.flow.contract.model.TaskStepDefinition
-import source.hanger.flow.contract.runtime.flow.access.FlowEnterHandlingAccess
-import source.hanger.flow.contract.runtime.flow.access.FlowErrorHandlingAccess
-import source.hanger.flow.contract.runtime.flow.function.FlowEnterHandingRunnable
-import source.hanger.flow.contract.runtime.flow.function.FlowErrorHandingRunnable
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess
 import source.hanger.flow.dsl.hint.FlowHint
 import source.hanger.flow.util.ClosureUtils
 
 import java.util.concurrent.atomic.AtomicBoolean
 
 import static groovy.lang.Closure.DELEGATE_FIRST
+import static source.hanger.flow.util.ClosureUtils.*
 import static source.hanger.flow.util.DslValidationUtils.ensureSingleDefinition
 import static source.hanger.flow.util.DslValidationUtils.getUnknownPropertyReadErrorMessage
 
@@ -88,17 +86,10 @@ class FlowBuilder implements FlowHint {
      * 定义流程进入时的全局处理逻辑
      * @param enterClosure Groovy闭包，最终封装为Java接口
      */
-    void onEnter(@DelegatesTo(value = FlowEnterHandlingAccess, strategy = DELEGATE_FIRST) Closure<?> enterClosure) {
+    void onEnter(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> enterClosure) {
         // 适配闭包的执行逻辑为java的实现
         ensureSingleDefinition(hasOnEnterDefined, "flow.onEnter", {
-            flowDefinition.enterHandingRunnable = new FlowEnterHandingRunnable() {
-                @Override
-                void handle(FlowEnterHandlingAccess access) {
-                    enterClosure.delegate = access
-                    enterClosure.resolveStrategy = DELEGATE_FIRST
-                    enterClosure.call()
-                }
-            }
+            flowDefinition.enterHandingRunnable = toFlowClosure(enterClosure)
         })
     }
 
@@ -108,19 +99,12 @@ class FlowBuilder implements FlowHint {
      * @param errorClosure Groovy闭包，最终封装为Java接口
      * @return NextBuilder 用于链式指定错误跳转目标
      */
-    NextBuilder onError(@DelegatesTo(value = FlowErrorHandlingAccess, strategy = DELEGATE_FIRST) Closure<?> errorClosure) {
+    NextBuilder onError(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> errorClosure) {
         ensureSingleDefinition(hasOnErrorDefined, "flow.onError", {
-            flowDefinition.errorHandingRunnable = new FlowErrorHandingRunnable() {
-                @Override
-                void handle(FlowErrorHandlingAccess access) {
-                    errorClosure.delegate = access
-                    errorClosure.resolveStrategy = DELEGATE_FIRST
-                    errorClosure.call()
-                }
-            }
+            flowDefinition.errorHandingRunnable = toFlowClosure(errorClosure)
         })
         // 虚拟flow节点
-        internalTask { name FlowDslEntry.FLOW_GLOBAL_STEP }.next ClosureUtils.TRUE
+        internalTask { name FlowDslEntry.FLOW_GLOBAL_STEP }.next TRUE
     }
 
     /**

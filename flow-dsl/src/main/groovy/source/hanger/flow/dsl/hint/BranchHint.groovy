@@ -1,7 +1,7 @@
 package source.hanger.flow.dsl.hint
 
-import groovy.transform.CompileStatic
-import source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicateAccess
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess
+import source.hanger.flow.contract.runtime.common.FlowRuntimePredicate
 
 import static groovy.lang.Closure.DELEGATE_FIRST
 
@@ -22,12 +22,11 @@ import static groovy.lang.Closure.DELEGATE_FIRST
  *   - 只允许出现when方法，明确分支的条件表达式
  *   - 便于后续扩展分支属性（如优先级、标签等）
  */
-@CompileStatic
 trait BranchHint {
     /**
      * DSL关键词：when
      * 定义分支的条件表达式
      * @param conditionClosure 条件闭包，委托为FlowRuntimePredicateAccess
      */
-    abstract void when(@DelegatesTo(value = FlowRuntimePredicateAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure)
+    abstract void when(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure)
 }

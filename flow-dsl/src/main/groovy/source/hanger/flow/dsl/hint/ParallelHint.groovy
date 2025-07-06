@@ -1,7 +1,7 @@
 package source.hanger.flow.dsl.hint
 
-import groovy.transform.CompileStatic
-import source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicateAccess
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess
+import source.hanger.flow.contract.runtime.common.FlowRuntimePredicate
 
 import static groovy.lang.Closure.DELEGATE_FIRST
 
@@ -32,7 +32,6 @@ import static groovy.lang.Closure.DELEGATE_FIRST
  *   - 便于后续扩展新的并行块DSL语法
  *   - 强制所有parallel DSL实现都必须支持这些语法
  */
-@CompileStatic
 trait ParallelHint {
     /**
      * DSL关键词：name
@@ -67,10 +66,10 @@ trait ParallelHint {
     /**
      * DSL关键词：next
      * 定义并行块的汇合后跳转分支
-     * @param conditionClosure 条件闭包，委托为FlowRuntimePredicateAccess
+     * @param conditionClosure 条件闭包，委托为FlowExecuteAccess
      * @return NextHint 用于链式指定跳转目标
      */
-    abstract NextHint next(@DelegatesTo(value = FlowRuntimePredicateAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure)
+    abstract NextHint next(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure)
 
     /**
      * DSL关键词：nextTo

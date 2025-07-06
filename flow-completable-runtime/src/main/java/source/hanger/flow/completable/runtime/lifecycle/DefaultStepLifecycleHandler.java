@@ -1,8 +1,9 @@
 package source.hanger.flow.completable.runtime.lifecycle;
 
 import source.hanger.flow.contract.model.StepDefinition;
-import source.hanger.flow.core.runtime.FlowExecutionContext;
-import source.hanger.flow.core.runtime.StepLifecycleHandler;
+import source.hanger.flow.core.runtime.execution.FlowExecutionContext;
+import source.hanger.flow.core.runtime.lifecycle.StepLifecycleHandler;
+import source.hanger.flow.core.util.FlowLogContext;
 import source.hanger.flow.core.util.FlowLogger;
 
 /**
@@ -13,7 +14,7 @@ import source.hanger.flow.core.util.FlowLogger;
 public class DefaultStepLifecycleHandler implements StepLifecycleHandler {
     @Override
     public void onStepStart(StepDefinition step, FlowExecutionContext context) {
-        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogger.FlowLogContext(
+        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogContext(
             context.getFlowDefinition().getName(),
             context.getFlowDefinition().getVersion(),
             context.getExecutionId(),
@@ -23,7 +24,7 @@ public class DefaultStepLifecycleHandler implements StepLifecycleHandler {
 
     @Override
     public void onStepComplete(StepDefinition step, FlowExecutionContext context) {
-        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogger.FlowLogContext(
+        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogContext(
             context.getFlowDefinition().getName(),
             context.getFlowDefinition().getVersion(),
             context.getExecutionId(),
@@ -33,7 +34,7 @@ public class DefaultStepLifecycleHandler implements StepLifecycleHandler {
 
     @Override
     public void onStepError(StepDefinition step, FlowExecutionContext context, Exception error) {
-        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogger.FlowLogContext(
+        FlowLogger.log(FlowLogger.Level.DEBUG, new FlowLogContext(
             context.getFlowDefinition().getName(),
             context.getFlowDefinition().getVersion(),
             context.getExecutionId(),

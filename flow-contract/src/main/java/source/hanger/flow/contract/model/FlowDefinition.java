@@ -1,10 +1,9 @@
 package source.hanger.flow.contract.model;
 
+import source.hanger.flow.contract.runtime.common.FlowClosure;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import source.hanger.flow.contract.runtime.flow.function.FlowEnterHandingRunnable;
-import source.hanger.flow.contract.runtime.flow.function.FlowErrorHandingRunnable;
 
 /**
  * 流程定义（FlowDefinition）
@@ -19,8 +18,8 @@ import source.hanger.flow.contract.runtime.flow.function.FlowErrorHandingRunnabl
  * <p>
  * 设计说明：
  *   - version/name/description为流程元信息
- *   - enterHandingRunnable为流程进入时的全局回调
- *   - errorHandingRunnable为流程全局错误处理回调
+ *   - enterHandlingClosure为流程进入时的全局回调
+ *   - errorHandlingClosure为流程全局错误处理回调
  *   - stepDefinitions为流程的所有步骤节点（任务、并行、异步等）
  *   - 支持动态添加步骤
  */
@@ -35,16 +34,28 @@ public class FlowDefinition {
      * 流程进入时的逻辑（全局onEnter）
      * 只有一次
      */
-    private FlowEnterHandingRunnable enterHandingRunnable;
+    private FlowClosure enterHandlingClosure;
     /**
      * 异常处理逻辑（全局onError）
      * 只有一次
      */
-    private FlowErrorHandingRunnable errorHandingRunnable;
+    private FlowClosure errorHandlingClosure;
     /**
      * 流程步骤节点列表（任务、并行、异步等）
      */
     private List<StepDefinition> stepDefinitions;
+
+    public FlowDefinition() {
+    }
+
+    public FlowDefinition(String name) {
+        this.name = name;
+    }
+
+    public FlowDefinition(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 
     /**
      * 添加流程步骤节点
@@ -106,37 +117,31 @@ public class FlowDefinition {
     }
 
     /**
-     * 获取流程进入时的全局回调
-     * @return 全局onEnter回调
+     * 获取流程进入处理闭包
      */
-    public FlowEnterHandingRunnable getEnterHandingRunnable() {
-        return enterHandingRunnable;
+    public FlowClosure getEnterHandlingClosure() {
+        return enterHandlingClosure;
     }
 
     /**
-     * 设置流程进入时的全局回调
-     * @param enterHandingRunnable 全局onEnter回调
+     * 设置流程进入处理闭包
      */
-    public void setEnterHandingRunnable(
-        FlowEnterHandingRunnable enterHandingRunnable) {
-        this.enterHandingRunnable = enterHandingRunnable;
+    public void setEnterHandlingClosure(FlowClosure enterHandlingClosure) {
+        this.enterHandlingClosure = enterHandlingClosure;
     }
 
     /**
-     * 获取流程全局错误处理回调
-     * @return 全局onError回调
+     * 获取流程错误处理闭包
      */
-    public FlowErrorHandingRunnable getErrorHandingRunnable() {
-        return errorHandingRunnable;
+    public FlowClosure getErrorHandlingClosure() {
+        return errorHandlingClosure;
     }
 
     /**
-     * 设置流程全局错误处理回调
-     * @param errorHandingRunnable 全局onError回调
+     * 设置流程错误处理闭包
      */
-    public void setErrorHandingRunnable(
-        FlowErrorHandingRunnable errorHandingRunnable) {
-        this.errorHandingRunnable = errorHandingRunnable;
+    public void setErrorHandlingClosure(FlowClosure errorHandlingClosure) {
+        this.errorHandlingClosure = errorHandlingClosure;
     }
 
     /**
@@ -148,5 +153,26 @@ public class FlowDefinition {
             stepDefinitions = new ArrayList<>();
         }
         return stepDefinitions;
+    }
+
+    public void setStepDefinitions(List<StepDefinition> stepDefinitions) {
+        this.stepDefinitions = stepDefinitions;
+    }
+
+    // 兼容性方法，保持向后兼容
+    public FlowClosure getEnterHandingRunnable() {
+        return enterHandlingClosure;
+    }
+
+    public void setEnterHandingRunnable(FlowClosure enterHandlingClosure) {
+        this.enterHandlingClosure = enterHandlingClosure;
+    }
+
+    public FlowClosure getErrorHandingRunnable() {
+        return errorHandlingClosure;
+    }
+
+    public void setErrorHandingRunnable(FlowClosure errorHandlingClosure) {
+        this.errorHandlingClosure = errorHandlingClosure;
     }
 }

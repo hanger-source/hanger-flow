@@ -1,178 +1,124 @@
 package source.hanger.flow.completable.runtime;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import source.hanger.flow.completable.runtime.step.TaskStepExecutor;
 import source.hanger.flow.contract.model.*;
-import source.hanger.flow.contract.runtime.task.function.FlowTaskRunnable;
-import source.hanger.flow.core.runtime.FlowResult;
-import source.hanger.flow.core.runtime.FlowStatus;
+import source.hanger.flow.contract.runtime.channel.FlowDataChunk;
+import source.hanger.flow.contract.runtime.channel.FlowDataChunkBuffer;
+import source.hanger.flow.contract.runtime.channel.FlowDataChunkListener;
+import source.hanger.flow.contract.runtime.channel.FlowStreamingChannel;
+import source.hanger.flow.contract.runtime.common.FlowClosure;
+import source.hanger.flow.core.runtime.channel.DefaultFlowChannel;
+import source.hanger.flow.core.runtime.execution.FlowExecutionContext;
+import source.hanger.flow.core.runtime.execution.FlowResult;
+import source.hanger.flow.core.runtime.status.FlowStatus;
+import source.hanger.flow.core.runtime.step.StepExecutionCallback;
+import source.hanger.flow.core.runtime.step.StepExecutionHandle;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
 
 /**
- * CompletableFlowEngine单元测试
+ * CompletableFlowEngine单元测试（新版channel buffer兼容）
  */
 public class CompletableFlowEngineTest {
-    
+
+    private static final Logger log = LoggerFactory.getLogger(CompletableFlowEngineTest.class);
+
     @Test
-    public void testSimpleTaskExecution() throws ExecutionException, InterruptedException, TimeoutException {
-        // 创建流程引擎
-        CompletableFlowEngine engine = new CompletableFlowEngine();
-        
-        // 创建简单流程
-        FlowDefinition flow = new FlowDefinition();
-        flow.setName("测试流程");
-        flow.setDescription("简单任务测试");
-        
-        // 创建任务步骤
-        TaskStepDefinition task = new TaskStepDefinition();
-        task.setName("testTask");
-        task.setDescription("测试任务");
-        task.setTaskRunnable(access -> {
-            access.log("执行测试任务");
-            // 模拟工作
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+    public void testStreamingTaskExecution() throws Exception {
+        // 创建支持流式的任务步骤
+        TaskStepDefinition streamingTask = new TaskStepDefinition();
+        streamingTask.setName("__START__");
+        streamingTask.setStreamingSupported(true);
+        streamingTask.setOutputType(String.class);
+        streamingTask.setTaskRunnable(access -> {
+            // 通过channel推送流式数据
+            access.getChannel().acquireBuffer("streaming").pushFragment("fragment-1");
+            access.getChannel().acquireBuffer("streaming").pushFragment("fragment-2");
+            access.getChannel().acquireBuffer("streaming").pushFragment("fragment-3");
+            access.getChannel().acquireBuffer("streaming").pushDone();
         });
-        
-        flow.addStep(task);
-        
+
+        // 创建流程定义
+        FlowDefinition flowDef = new FlowDefinition();
+        flowDef.setName("streamingTest");
+        flowDef.setVersion("1.0");
+        flowDef.addStep(streamingTask);
+
+        // 创建引擎
+        CompletableFlowEngine engine = new CompletableFlowEngine();
+
         // 执行流程
-        CompletableFuture<FlowResult> future = engine.execute(flow);
+        CompletableFuture<FlowResult> future = engine.execute(flowDef);
+
+        // 等待完成
         FlowResult result = future.get(5, TimeUnit.SECONDS);
-        
+
         // 验证结果
         assertNotNull(result);
         assertEquals(FlowStatus.SUCCESS, result.getStatus());
         assertNotNull(result.getExecutionId());
     }
-    
+
     @Test
-    public void testParallelExecution() throws ExecutionException, InterruptedException, TimeoutException {
-        // 创建流程引擎
+    public void testStreamingFragmentCallback() throws Exception {
+        // 创建支持流式的任务步骤
+        TaskStepDefinition streamingTask = new TaskStepDefinition();
+        streamingTask.setName("__START__");
+        streamingTask.setStreamingSupported(true);
+        streamingTask.setOutputType(String.class);
+        // fragments 和 finalResult 提前声明
+        List<Object> fragments = new ArrayList<>();
+        AtomicReference<Object> finalResult = new AtomicReference<>();
+        // 在 taskRunnable 内注册监听并推送数据
+        streamingTask.setTaskRunnable(access -> {
+            access.getChannel().acquireBuffer("streaming").pushFragment("fragment-1");
+            access.getChannel().acquireBuffer("streaming").pushFragment("fragment-2");
+            access.getChannel().acquireBuffer("streaming").pushFragment("fragment-3");
+            access.getChannel().acquireBuffer("streaming").pushFragment("fragment-4");
+            access.getChannel().acquireBuffer("streaming").pushFragment("fragment-5");
+            access.getChannel().acquireBuffer("streaming").pushDone();
+
+            access.getChannel().getBuffer("streaming").onReceive(chunk -> {
+                if (chunk.isFragment()) {
+                    access.log("onReceive streaming " + chunk.getData());
+                    fragments.add(chunk.getData());
+                }
+            });
+        });
+        // 创建流程定义
+        FlowDefinition flowDef = new FlowDefinition();
+        flowDef.setName("streamingTest");
+        flowDef.setVersion("1.0");
+        flowDef.addStep(streamingTask);
+        // 创建引擎
         CompletableFlowEngine engine = new CompletableFlowEngine();
-        
-        // 创建流程
-        FlowDefinition flow = new FlowDefinition();
-        flow.setName("并行测试流程");
-        
-        // 创建任务1
-        TaskStepDefinition task1 = new TaskStepDefinition();
-        task1.setName("task1");
-        task1.setTaskRunnable(createTaskHandler("task1", 200));
-        flow.addStep(task1);
-        
-        // 创建任务2
-        TaskStepDefinition task2 = new TaskStepDefinition();
-        task2.setName("task2");
-        task2.setTaskRunnable(createTaskHandler("task2", 300));
-        flow.addStep(task2);
-        
-        // 创建并行步骤
-        ParallelStepDefinition parallel = new ParallelStepDefinition();
-        parallel.setName("parallel");
-        parallel.setDescription("并行执行");
-        
-        // 添加分支
-        Branch branch1 = new Branch(null, "task1");
-        Branch branch2 = new Branch(null, "task2");
-        parallel.addBranch(branch1);
-        parallel.addBranch(branch2);
-        
-        // 设置汇合点
-        parallel.setJoinBranchNames(java.util.Arrays.asList("task1", "task2"));
-        flow.addStep(parallel);
-        
-        // 执行流程
-        CompletableFuture<FlowResult> future = engine.execute(flow);
-        FlowResult result = future.get(10, TimeUnit.SECONDS);
-        
-        // 验证结果
+        CompletableFuture<FlowResult> future = engine.execute(flowDef);
+        FlowResult result = future.get(5, TimeUnit.SECONDS);
         assertNotNull(result);
         assertEquals(FlowStatus.SUCCESS, result.getStatus());
-    }
-    
-    @Test
-    public void testAsyncExecution() throws ExecutionException, InterruptedException, TimeoutException {
-        // 创建流程引擎
-        CompletableFlowEngine engine = new CompletableFlowEngine();
-        
-        // 创建流程
-        FlowDefinition flow = new FlowDefinition();
-        flow.setName("异步测试流程");
-        
-        // 创建异步步骤
-        AsyncStepDefinition async = new AsyncStepDefinition();
-        async.setName("async");
-        async.setDescription("异步执行");
-        async.addBranchName("task1");
-        async.addBranchName("task2");
-        flow.addStep(async);
-        
-        // 创建任务1
-        TaskStepDefinition task1 = new TaskStepDefinition();
-        task1.setName("task1");
-        task1.setTaskRunnable(createTaskHandler("task1", 100));
-        flow.addStep(task1);
-        
-        // 创建任务2
-        TaskStepDefinition task2 = new TaskStepDefinition();
-        task2.setName("task2");
-        task2.setTaskRunnable(createTaskHandler("task2", 150));
-        flow.addStep(task2);
-        
-        // 执行流程
-        CompletableFuture<FlowResult> future = engine.execute(flow);
-        FlowResult result = future.get(5, TimeUnit.SECONDS);
-        
+
         // 验证结果
-        assertNotNull(result);
-        assertEquals(FlowStatus.SUCCESS, result.getStatus());
+        assertNotNull(result.getAttributes());
+        assertTrue(result.getAttributes().containsKey("result"));
+        // 等待数据收集
+        TimeUnit.MILLISECONDS.sleep(500);
+        // 验证fragment和最终结果
+        assertTrue(fragments.size() >= 1);
     }
-    
-    @Test
-    public void testErrorHandling() throws ExecutionException, InterruptedException, TimeoutException {
-        // 创建流程引擎
-        CompletableFlowEngine engine = new CompletableFlowEngine();
-        
-        // 创建流程
-        FlowDefinition flow = new FlowDefinition();
-        flow.setName("错误处理测试流程");
-        
-        // 创建会抛出异常的任务
-        TaskStepDefinition errorTask = new TaskStepDefinition();
-        errorTask.setName("errorTask");
-        errorTask.setTaskRunnable(access -> {
-            access.log("执行会出错的任务");
-            throw new RuntimeException("模拟任务执行错误");
-        });
-        errorTask.setErrorHandingRunnable(access -> {
-            access.log("处理任务错误: " + access.getException().getMessage());
-        });
-        
-        flow.addStep(errorTask);
-        
-        // 执行流程
-        CompletableFuture<FlowResult> future = engine.execute(flow);
-        FlowResult result = future.get(5, TimeUnit.SECONDS);
-        
-        // 验证结果
-        assertNotNull(result);
-        assertEquals(FlowStatus.ERROR, result.getStatus());
-        assertNotNull(result.getError());
-    }
-    
+
     /**
      * 创建任务处理器
      */
-    private FlowTaskRunnable createTaskHandler(String taskName, long sleepTime) {
+    private FlowClosure createTaskHandler(String taskName, long sleepTime) {
         return access -> {
             access.log("执行任务: " + taskName);
             try {

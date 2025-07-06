@@ -57,4 +57,19 @@ public class ParallelStepDefinition extends AbstractStepDefinition {
     public void setJoinBranchNames(List<String> joinBranchNames) {
         this.joinBranchNames = joinBranchNames;
     }
+
+    @Override
+    public boolean isStreamingSupported() {
+        return false;
+    }
+
+    @Override
+    public Class<?> getOutputType() {
+        return Object.class;
+    }
+
+    @Override
+    public StepType getStepType() {
+        return StepType.PARALLEL;
+    }
 }

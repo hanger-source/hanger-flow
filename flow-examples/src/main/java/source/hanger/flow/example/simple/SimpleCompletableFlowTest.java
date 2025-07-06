@@ -2,14 +2,14 @@ package source.hanger.flow.example.simple;
 
 import source.hanger.flow.contract.model.FlowDefinition;
 import source.hanger.flow.contract.model.TaskStepDefinition;
-import source.hanger.flow.contract.runtime.task.function.FlowTaskRunnable;
-import source.hanger.flow.core.runtime.FlowResult;
-import source.hanger.flow.core.runtime.FlowStatus;
+import source.hanger.flow.contract.runtime.common.FlowClosure;
+import source.hanger.flow.core.runtime.execution.FlowResult;
+import source.hanger.flow.core.runtime.status.FlowStatus;
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -47,7 +47,7 @@ public class SimpleCompletableFlowTest {
             ExecutorService executor = Executors.newFixedThreadPool(2);
 
             // 3. 准备初始参数
-            Map<String, Serializable> initialParams = new HashMap<>();
+            Map<String, Object> initialParams = new HashMap<>();
             initialParams.put("orderId", "TEST_ORDER_" + System.currentTimeMillis());
             initialParams.put("userName", "测试用户");
             initialParams.put("amount", 100.0);
@@ -61,7 +61,7 @@ public class SimpleCompletableFlowTest {
             logger.info("测试流程执行完成！");
             logger.info("执行状态: {}", result.getStatus());
             logger.info("执行ID: {}", result.getExecutionId());
-            logger.info("最终参数: {}", result.getParams());
+            logger.info("最终输入: {}", result.getAttributes());
 
             if (result.isSuccess()) {
                 logger.info("✅ 测试成功！流程正常执行完成");
@@ -95,20 +95,20 @@ public class SimpleCompletableFlowTest {
         testTask.setDescription("一个简单的测试任务");
 
         // 设置任务执行逻辑
-        testTask.setTaskRunnable(new FlowTaskRunnable() {
+        testTask.setTaskRunnable(new FlowClosure() {
             @Override
-            public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
-                logger.info("[TASK RUN] 执行测试任务");
+            public void call(FlowRuntimeExecuteAccess access) {
+                SimpleCompletableFlowTest.logger.info("[TASK RUN] 执行测试任务");
 
                 // 模拟业务逻辑
                 String orderId = "TEST_ORDER_" + System.currentTimeMillis();
                 String userName = "测试用户";
                 Double amount = 100.0;
 
-                logger.info("处理订单: {}, 用户: {}, 金额: {}", orderId, userName, amount);
+                SimpleCompletableFlowTest.logger.info("处理订单: {}, 用户: {}, 金额: {}", orderId, userName, amount);
 
                 // 模拟处理结果
-                logger.info("测试任务执行完成");
+                SimpleCompletableFlowTest.logger.info("测试任务执行完成");
                 access.log("测试任务执行完成");
             }
         });
@@ -122,7 +122,7 @@ public class SimpleCompletableFlowTest {
     /**
      * 手动执行流程（简化版本）
      */
-    private FlowResult executeFlowManually(FlowDefinition flowDefinition, Map<String, Serializable> initialParams) {
+    private FlowResult executeFlowManually(FlowDefinition flowDefinition, Map<String, Object> initialParams) {
         try {
             String executionId = flowDefinition.getName() + "_" + System.currentTimeMillis();
             logger.info("开始执行流程: {}, 执行ID: {}", flowDefinition.getName(), executionId);
@@ -134,9 +134,9 @@ public class SimpleCompletableFlowTest {
                     logger.info("执行任务步骤: {}", taskStep.getName());
 
                     // 执行任务
-                    FlowTaskRunnable taskRunnable = taskStep.getTaskRunnable();
+                    FlowClosure taskRunnable = taskStep.getTaskRunnable();
                     if (taskRunnable != null) {
-                        taskRunnable.run(null);
+                        taskRunnable.call(null);
                     }
                 }
             }

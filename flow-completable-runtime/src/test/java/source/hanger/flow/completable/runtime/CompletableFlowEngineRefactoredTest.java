@@ -2,11 +2,10 @@ package source.hanger.flow.completable.runtime;
 
 import source.hanger.flow.contract.model.FlowDefinition;
 import source.hanger.flow.contract.model.TaskStepDefinition;
-import source.hanger.flow.contract.runtime.task.function.FlowTaskRunnable;
-import source.hanger.flow.core.runtime.FlowErrorHandler;
-import source.hanger.flow.core.runtime.FlowResult;
-import source.hanger.flow.core.runtime.FlowStatus;
-import source.hanger.flow.core.runtime.StepErrorHandler;
+import source.hanger.flow.contract.runtime.common.FlowClosure;
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess;
+import source.hanger.flow.core.runtime.execution.FlowResult;
+import source.hanger.flow.core.runtime.status.FlowStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +52,7 @@ public class CompletableFlowEngineRefactoredTest {
             FlowDefinition flow = createTestFlow();
 
             // 执行流程
-            Map<String, Serializable> params = new HashMap<>();
+            Map<String, Object> params = new HashMap<>();
             params.put("testParam", "testValue");
 
             CompletableFuture<FlowResult> future = engine.execute(flow, params);
@@ -88,7 +87,7 @@ public class CompletableFlowEngineRefactoredTest {
             FlowDefinition flow = createErrorTestFlow();
 
             // 执行流程
-            Map<String, Serializable> params = new HashMap<>();
+            Map<String, Object> params = new HashMap<>();
             params.put("testParam", "testValue");
 
             CompletableFuture<FlowResult> future = engine.execute(flow, params);
@@ -123,7 +122,7 @@ public class CompletableFlowEngineRefactoredTest {
             FlowDefinition flow = createTestFlow();
 
             // 执行流程
-            Map<String, Serializable> params = new HashMap<>();
+            Map<String, Object> params = new HashMap<>();
             params.put("testParam", "testValue");
 
             CompletableFuture<FlowResult> future = engine.execute(flow, params);
@@ -150,37 +149,15 @@ public class CompletableFlowEngineRefactoredTest {
         log.info("\n=== 自定义处理器测试 ===");
 
         try {
-            // 创建自定义错误处理器
-            StepErrorHandler customStepErrorHandler = new StepErrorHandler() {
-                @Override
-                public FlowResult handleError(source.hanger.flow.contract.model.StepDefinition step,
-                    source.hanger.flow.core.runtime.FlowExecutionContext context,
-                    Exception error) {
-                    log.info("[CustomStepErrorHandler] 自定义步骤错误处理: {}", step.getName());
-                    return new FlowResult(context.getExecutionId(), FlowStatus.ERROR, context.getParams(), error);
-                }
-            };
-
-            FlowErrorHandler customFlowErrorHandler = new FlowErrorHandler() {
-                @Override
-                public FlowResult handleError(source.hanger.flow.contract.model.FlowDefinition flowDefinition,
-                    source.hanger.flow.core.runtime.FlowExecutionContext context,
-                    Exception error) {
-                    log.info("[CustomFlowErrorHandler] 自定义流程错误处理: {}", flowDefinition.getName());
-                    return new FlowResult(context.getExecutionId(), FlowStatus.ERROR, context.getParams(), error);
-                }
-            };
-
             // 创建引擎
             ExecutorService executor = Executors.newFixedThreadPool(2);
-            CompletableFlowEngine engine = new CompletableFlowEngine(executor, customStepErrorHandler,
-                customFlowErrorHandler);
+            CompletableFlowEngine engine = new CompletableFlowEngine(executor);
 
             // 创建会抛出异常的测试流程
             FlowDefinition flow = createErrorTestFlow();
 
             // 执行流程
-            Map<String, Serializable> params = new HashMap<>();
+            Map<String, Object> params = new HashMap<>();
             params.put("testParam", "testValue");
 
             CompletableFuture<FlowResult> future = engine.execute(flow, params);
@@ -213,10 +190,10 @@ public class CompletableFlowEngineRefactoredTest {
         TaskStepDefinition task = new TaskStepDefinition();
         task.setName("测试任务");
         task.setDescription("测试任务步骤");
-        task.setTaskRunnable(new FlowTaskRunnable() {
+        task.setTaskRunnable(new FlowClosure() {
             @Override
-            public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
-                log.info("[TestTask] 执行测试任务");
+            public void call(FlowRuntimeExecuteAccess access) {
+                CompletableFlowEngineRefactoredTest.log.info("[TestTask] 执行测试任务");
                 access.log("测试任务执行完成");
             }
         });
@@ -238,10 +215,10 @@ public class CompletableFlowEngineRefactoredTest {
         TaskStepDefinition task = new TaskStepDefinition();
         task.setName("错误任务");
         task.setDescription("会抛出异常的任务步骤");
-        task.setTaskRunnable(new FlowTaskRunnable() {
+        task.setTaskRunnable(new FlowClosure() {
             @Override
-            public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
-                log.info("[ErrorTask] 执行错误任务");
+            public void call(FlowRuntimeExecuteAccess access) {
+                CompletableFlowEngineRefactoredTest.log.info("[ErrorTask] 执行错误任务");
                 throw new RuntimeException("模拟任务执行异常");
             }
         });

@@ -1,6 +1,6 @@
 package source.hanger.flow.contract.model;
 
-import source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicate;
+import source.hanger.flow.contract.runtime.common.FlowRuntimePredicate;
 
 /**
  * 流程流转条件记录类

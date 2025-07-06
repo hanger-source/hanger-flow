@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import source.hanger.flow.completable.runtime.CompletableFlowEngine;
 import source.hanger.flow.contract.model.FlowDefinition;
-import source.hanger.flow.core.runtime.FlowResult;
+import source.hanger.flow.core.runtime.execution.FlowResult;
 
 import java.io.File;
 import java.io.Serializable;
@@ -15,6 +15,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * CompletableFuture流程引擎示例
@@ -58,11 +61,12 @@ public class CompletableFlowExample {
             }
 
             // 2. 创建流程引擎
-            ExecutorService executor = Executors.newFixedThreadPool(4);
+            ExecutorService executor = new ThreadPoolExecutor(8, 8, 0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>());
             CompletableFlowEngine engine = new CompletableFlowEngine(executor);
 
             // 3. 准备初始参数
-            Map<String, Serializable> initialParams = new HashMap<>();
+            Map<String, Object> initialParams = new HashMap<>();
             initialParams.put("orderId", "ORDER_" + System.currentTimeMillis());
             initialParams.put("userEmail", "user@example.com");
             initialParams.put("userPhone", "13800138000");
@@ -79,7 +83,7 @@ public class CompletableFlowExample {
             logger.info("流程执行完成！");
             logger.info("执行状态: {}", result.getStatus());
             logger.info("执行ID: {}", result.getExecutionId());
-            logger.info("最终参数: {}", result.getParams());
+            logger.info("最终输入: {}", result.getAttributes());
             if (result.isError()) {
                 logger.error("执行失败，错误: {}", result.getError());
             }
@@ -100,6 +104,7 @@ public class CompletableFlowExample {
      */
     private FlowDefinition parseDslScript() throws Exception {
         // 获取脚本文件路径
+        // 在hanger-flow下 运行：mvn exec:java -Dexec.mainClass="source.hanger.flow.example.basic.CompletableFlowExample"
         String scriptPath = "flow-examples/src/main/resources/script/MyComplexProcess.groovy";
         File scriptFile = new File(scriptPath);
 
@@ -161,7 +166,7 @@ public class CompletableFlowExample {
             for (int i = 0; i < 3; i++) {
                 int orderIndex = i;
 
-                Map<String, Serializable> initialParams = new HashMap<>();
+                Map<String, Object> initialParams = new HashMap<>();
                 initialParams.put("orderId", "ORDER_CONCURRENT_" + orderIndex + "_" + System.currentTimeMillis());
                 initialParams.put("userEmail", "user" + orderIndex + "@example.com");
                 initialParams.put("userPhone", "1380013800" + orderIndex);

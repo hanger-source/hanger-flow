@@ -139,7 +139,7 @@ java -cp "flow-examples/target/classes:flow-completable-runtime/target/classes:f
 - **异步/并行/分支**：支持复杂流程编排
 - **结构化日志**：统一格式，支持 traceId、stepName、flowName 等上下文
 - **参数链路**：DSL、AccessContext、日志全链路参数一致
-- **类型安全**：全局 Map<String, Serializable> 参数体系，类型兼容
+- **类型安全**：全局 Map<String, Object> 参数体系，类型兼容
 - **自动推进**：支持递归推进所有节点，兼容分支、并行、异步
 - **自动化测试**：可一键运行主类，输出完整日志
 

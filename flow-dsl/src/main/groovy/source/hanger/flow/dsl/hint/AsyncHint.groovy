@@ -1,7 +1,5 @@
 package source.hanger.flow.dsl.hint
 
-import groovy.transform.CompileStatic
-
 /**
  * AsyncHint 是 async { ... } DSL块的语法提示接口（trait）
  * <p>
@@ -24,7 +22,6 @@ import groovy.transform.CompileStatic
  *   - 便于后续扩展异步块DSL语法
  *   - 强制所有async DSL实现都必须支持这些语法
  */
-@CompileStatic
 trait AsyncHint {
     /**
      * DSL关键词：name

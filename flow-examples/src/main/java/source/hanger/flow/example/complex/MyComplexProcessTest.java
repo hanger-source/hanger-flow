@@ -2,7 +2,9 @@ package source.hanger.flow.example.complex;
 
 import source.hanger.flow.completable.runtime.CompletableFlowEngine;
 import source.hanger.flow.contract.model.FlowDefinition;
-import source.hanger.flow.core.runtime.FlowResult;
+import source.hanger.flow.contract.model.StepDefinition;
+import source.hanger.flow.contract.model.Transition;
+import source.hanger.flow.core.runtime.execution.FlowResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +14,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess;
+import source.hanger.flow.contract.runtime.common.FlowRuntimePredicate;
 
 /**
  * MyComplexProcess.groovy 完整测试
@@ -52,7 +57,7 @@ public class MyComplexProcessTest {
             CompletableFlowEngine engine = new CompletableFlowEngine(executor);
 
             // 3. 准备初始参数
-            Map<String, Serializable> initialParams = new HashMap<>();
+            Map<String, Object> initialParams = new HashMap<>();
             initialParams.put("orderId", "ORDER_" + System.currentTimeMillis());
             initialParams.put("userEmail", "user@example.com");
             initialParams.put("userPhone", "13800138000");
@@ -70,7 +75,7 @@ public class MyComplexProcessTest {
             logger.info("复杂流程执行完成！");
             logger.info("执行状态: {}", result.getStatus());
             logger.info("执行ID: {}", result.getExecutionId());
-            logger.info("最终参数: {}", result.getParams());
+            logger.info("最终输入: {}", result.getAttributes());
 
             if (result.isSuccess()) {
                 logger.info("✅ 复杂流程测试成功！流程正常执行完成");
@@ -113,7 +118,56 @@ public class MyComplexProcessTest {
         addTaskStep(flow, "记录错误日志", "记录任务级别的错误日志，通常比全局错误更细致");
         addTaskStep(flow, "通知管理员", "通知相关管理员流程实例失败或出现异常");
 
+        // 设置流转逻辑
+        setupFlowTransitions(flow);
+
         return flow;
+    }
+
+    /**
+     * 设置流程的流转逻辑
+     */
+    private void setupFlowTransitions(FlowDefinition flow) {
+        // 获取所有步骤
+        var steps = flow.getStepDefinitions();
+
+        // 设置线性流转：订单初始化 -> 库存检查 -> 支付处理 -> 物流分配 -> 拣货打包 -> 发送订单确认邮件 -> 发送短信通知 -> 订单完成
+        addTransition(steps.get(0), steps.get(1), "订单初始化 -> 库存检查"); // 订单初始化 -> 库存检查
+        addTransition(steps.get(1), steps.get(2), "库存检查 -> 支付处理"); // 库存检查 -> 支付处理
+        addTransition(steps.get(2), steps.get(5), "支付处理 -> 物流分配"); // 支付处理 -> 物流分配
+        addTransition(steps.get(5), steps.get(6), "物流分配 -> 拣货打包"); // 物流分配 -> 拣货打包
+        addTransition(steps.get(6), steps.get(7), "拣货打包 -> 发送订单确认邮件"); // 拣货打包 -> 发送订单确认邮件
+        addTransition(steps.get(7), steps.get(8), "发送订单确认邮件 -> 发送短信通知"); // 发送订单确认邮件 -> 发送短信通知
+        addTransition(steps.get(8), steps.get(9), "发送短信通知 -> 订单完成"); // 发送短信通知 -> 订单完成
+
+        // 设置错误处理流转
+        addTransition(steps.get(1), steps.get(3), "库存检查 -> 通知库存不足"); // 库存不足时
+        addTransition(steps.get(2), steps.get(4), "支付处理 -> 通知支付失败"); // 支付失败时
+        addTransition(steps.get(3), steps.get(10), "通知库存不足 -> 流程错误处理"); // 错误处理
+        addTransition(steps.get(4), steps.get(10), "通知支付失败 -> 流程错误处理"); // 错误处理
+        addTransition(steps.get(10), steps.get(11), "流程错误处理 -> 记录错误日志"); // 记录错误
+        addTransition(steps.get(11), steps.get(12), "记录错误日志 -> 通知管理员"); // 通知管理员
+    }
+
+    /**
+     * 添加流转关系
+     */
+    private void addTransition(StepDefinition from, StepDefinition to, String description) {
+        // 创建默认条件（总是执行）
+        FlowRuntimePredicate predicate = new FlowRuntimePredicate() {
+            @Override
+            public boolean test(FlowRuntimeExecuteAccess access) {
+                // 默认总是流转
+                access.log("执行流转: " + description);
+                return true;
+            }
+        };
+
+        // 创建Transition对象
+        Transition transition = new Transition(predicate, to.getName());
+
+        // 添加到步骤的流转列表中
+        from.addTransition(transition);
     }
 
     /**
@@ -126,54 +180,54 @@ public class MyComplexProcessTest {
         task.setDescription(description);
 
         // 设置任务执行逻辑
-        task.setTaskRunnable(new source.hanger.flow.contract.runtime.task.function.FlowTaskRunnable() {
+        task.setTaskRunnable(new source.hanger.flow.contract.runtime.common.FlowClosure() {
             @Override
-            public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
-                logger.info("[TASK RUN] 执行任务: {}", name);
+            public void call(FlowRuntimeExecuteAccess access) {
+                MyComplexProcessTest.logger.info("[TASK RUN] 执行任务: {}", name);
 
                 // 模拟业务逻辑
                 switch (name) {
                     case "订单初始化":
-                        logger.info("准备订单数据，设置订单状态为待处理");
+                        MyComplexProcessTest.logger.info("准备订单数据，设置订单状态为待处理");
                         break;
                     case "库存检查":
-                        logger.info("检查所有订单商品的库存是否充足");
+                        MyComplexProcessTest.logger.info("检查所有订单商品的库存是否充足");
                         break;
                     case "支付处理":
-                        logger.info("调用支付网关完成支付");
+                        MyComplexProcessTest.logger.info("调用支付网关完成支付");
                         break;
                     case "通知库存不足":
-                        logger.info("通知用户商品库存不足，并终止订单流程");
+                        MyComplexProcessTest.logger.info("通知用户商品库存不足，并终止订单流程");
                         break;
                     case "通知支付失败":
-                        logger.info("通知用户支付失败，并引导重试或取消订单");
+                        MyComplexProcessTest.logger.info("通知用户支付失败，并引导重试或取消订单");
                         break;
                     case "物流分配":
-                        logger.info("为订单分配物流渠道，生成物流单号");
+                        MyComplexProcessTest.logger.info("为订单分配物流渠道，生成物流单号");
                         break;
                     case "拣货打包":
-                        logger.info("根据订单商品进行拣选和打包，更新库存");
+                        MyComplexProcessTest.logger.info("根据订单商品进行拣选和打包，更新库存");
                         break;
                     case "发送订单确认邮件":
-                        logger.info("通过邮件向用户发送订单确认信息");
+                        MyComplexProcessTest.logger.info("通过邮件向用户发送订单确认信息");
                         break;
                     case "发送短信通知":
-                        logger.info("通过短信通知用户订单支付成功");
+                        MyComplexProcessTest.logger.info("通过短信通知用户订单支付成功");
                         break;
                     case "订单完成":
-                        logger.info("流程成功结束，订单状态最终完成并更新到数据库");
+                        MyComplexProcessTest.logger.info("流程成功结束，订单状态最终完成并更新到数据库");
                         break;
                     case "流程错误处理":
-                        logger.info("捕获全局或未处理的流程错误，并进行统一处理");
+                        MyComplexProcessTest.logger.info("捕获全局或未处理的流程错误，并进行统一处理");
                         break;
                     case "记录错误日志":
-                        logger.info("记录任务级别的错误日志，通常比全局错误更细致");
+                        MyComplexProcessTest.logger.info("记录任务级别的错误日志，通常比全局错误更细致");
                         break;
                     case "通知管理员":
-                        logger.info("通知相关管理员流程实例失败或出现异常");
+                        MyComplexProcessTest.logger.info("通知相关管理员流程实例失败或出现异常");
                         break;
                     default:
-                        logger.info("执行通用任务逻辑");
+                        MyComplexProcessTest.logger.info("执行通用任务逻辑");
                 }
 
                 // 模拟处理时间
@@ -183,7 +237,7 @@ public class MyComplexProcessTest {
                     Thread.currentThread().interrupt();
                 }
 
-                logger.info("任务完成: {}", name);
+                MyComplexProcessTest.logger.info("任务完成: {}", name);
                 access.log("任务执行完成: " + name);
             }
         });
@@ -211,7 +265,7 @@ public class MyComplexProcessTest {
             for (int i = 0; i < 3; i++) {
                 int orderIndex = i;
 
-                Map<String, Serializable> initialParams = new HashMap<>();
+                Map<String, Object> initialParams = new HashMap<>();
                 initialParams.put("orderId", "ORDER_CONCURRENT_" + orderIndex + "_" + System.currentTimeMillis());
                 initialParams.put("userEmail", "user" + orderIndex + "@example.com");
                 initialParams.put("userPhone", "1380013800" + orderIndex);

@@ -1,6 +1,7 @@
 package source.hanger.flow.dsl
 
 import groovy.transform.Internal
+import source.hanger.flow.contract.constant.FlowConstants
 import source.hanger.flow.contract.model.FlowDefinition
 import source.hanger.flow.dsl.hint.FlowHint
 
@@ -15,16 +16,13 @@ class FlowDslEntry {
 
     @Internal
     /** 流程结束标记常量 */
-    public static String END = "__END__"
+    public static String END = FlowConstants.END
     @Internal
     /** 流程起始标记常量 */
-    public static String START = "__START__"
-    @Internal
-    /** 流程错误标记常量 */
-    public static String ERROR = "__ERROR__"
+    public static String START = FlowConstants.START
     @Internal
     /** 流程全局虚拟节点常量 */
-    public static String FLOW_GLOBAL_STEP = "__FLOW_GLOBAL_STEP__"
+    public static String FLOW_GLOBAL_STEP = FlowConstants.FLOW_GLOBAL_STEP
 
     /**
      * DSL入口方法：flow { ... }

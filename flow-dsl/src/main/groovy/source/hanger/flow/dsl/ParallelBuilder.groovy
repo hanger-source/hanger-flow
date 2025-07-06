@@ -3,13 +3,14 @@ package source.hanger.flow.dsl
 import groovy.transform.Internal
 import source.hanger.flow.contract.model.Branch
 import source.hanger.flow.contract.model.ParallelStepDefinition
-import source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicateAccess
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess
+import source.hanger.flow.contract.runtime.common.FlowRuntimePredicate
 import source.hanger.flow.dsl.hint.BranchHint
 import source.hanger.flow.dsl.hint.ParallelHint
 import source.hanger.flow.util.ClosureUtils
 
 import static groovy.lang.Closure.DELEGATE_FIRST
-import static source.hanger.flow.util.ClosureUtils.defaultFlowRuntimePredicate
+import static source.hanger.flow.util.ClosureUtils.*
 
 /**
  * 并行块DSL构建器
@@ -72,7 +73,7 @@ class ParallelBuilder implements ParallelHint {
      * @param conditionClosure 条件闭包
      * @return NextBuilder 用于链式指定跳转目标
      */
-    NextBuilder next(@DelegatesTo(value = FlowRuntimePredicateAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure) {
+    NextBuilder next(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure) {
         return new NextBuilder(parallelStepDefinition, conditionClosure)
     }
 
@@ -82,7 +83,7 @@ class ParallelBuilder implements ParallelHint {
      * @param nextStepName 跳转目标节点名称
      */
     def nextTo(String nextStepName) {
-        next ClosureUtils.TRUE to nextStepName
+        next TRUE to nextStepName
     }
 
     /**
@@ -100,7 +101,7 @@ class ParallelBuilder implements ParallelHint {
         BranchBuilder(ParallelStepDefinition parallelStepDefinition, String nextStepName) {
             this.parallelStepDefinition = parallelStepDefinition
             this.nextStepName = nextStepName
-            when(ClosureUtils.TRUE)
+            when(TRUE)
         }
 
         /**
@@ -108,8 +109,8 @@ class ParallelBuilder implements ParallelHint {
          * 定义分支的条件
          * @param conditionClosure 条件闭包
          */
-        void when(@DelegatesTo(value = FlowRuntimePredicateAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure) {
-            parallelStepDefinition.addBranch(new Branch(defaultFlowRuntimePredicate(conditionClosure), nextStepName))
+        void when(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure) {
+            parallelStepDefinition.addBranch(new Branch(toFlowRuntimePredicate(conditionClosure), nextStepName))
         }
     }
 }

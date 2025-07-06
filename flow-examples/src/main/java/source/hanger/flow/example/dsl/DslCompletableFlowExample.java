@@ -1,20 +1,14 @@
 package source.hanger.flow.example.dsl;
 
 import source.hanger.flow.completable.runtime.CompletableFlowEngine;
-import source.hanger.flow.core.runtime.FlowResult;
+import source.hanger.flow.core.runtime.execution.FlowResult;
 import source.hanger.flow.contract.model.*;
-import source.hanger.flow.contract.runtime.task.function.FlowTaskRunnable;
-import source.hanger.flow.contract.runtime.task.function.FlowTaskEnterHandingRunnable;
-import source.hanger.flow.contract.runtime.task.function.FlowTaskErrorHandingRunnable;
-import source.hanger.flow.contract.runtime.flow.function.FlowEnterHandingRunnable;
-import source.hanger.flow.contract.runtime.flow.function.FlowErrorHandingRunnable;
-import source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicate;
+import source.hanger.flow.contract.runtime.common.FlowClosure;
+import source.hanger.flow.contract.runtime.common.FlowRuntimePredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -50,7 +44,7 @@ public class DslCompletableFlowExample {
             log.info("流程执行完成:");
             log.info("执行ID: {}", result.getExecutionId());
             log.info("状态: {}", result.getStatus());
-            log.info("参数: {}", result.getParams());
+            log.info("输入: {}", result.getAttributes());
             
             if (result.isError()) {
                 log.error("错误: {}", result.getError());
@@ -100,7 +94,7 @@ public class DslCompletableFlowExample {
     /**
      * 创建流程进入处理器
      */
-    private static FlowEnterHandingRunnable createFlowEnterHandler() {
+    private static FlowClosure createFlowEnterHandler() {
         return access -> {
             access.log("流程开始执行");
             log.info("流程进入: 开始执行DSL示例流程");
@@ -110,17 +104,17 @@ public class DslCompletableFlowExample {
     /**
      * 创建流程错误处理器
      */
-    private static FlowErrorHandingRunnable createFlowErrorHandler() {
+    private static FlowClosure createFlowErrorHandler() {
         return access -> {
-            access.log("流程执行出错: " + access.getException().getMessage());
-            log.error("流程错误: {}", access.getException().getMessage());
+            access.log("流程执行出错");
+            log.error("流程错误: 执行过程中发生异常");
         };
     }
     
     /**
      * 创建任务步骤
      */
-    private static TaskStepDefinition createTaskStep(String name, String description, FlowTaskRunnable taskHandler) {
+    private static TaskStepDefinition createTaskStep(String name, String description, FlowClosure taskHandler) {
         TaskStepDefinition task = new TaskStepDefinition();
         task.setName(name);
         task.setDescription(description);
@@ -133,7 +127,7 @@ public class DslCompletableFlowExample {
     /**
      * 创建任务1处理器
      */
-    private static FlowTaskRunnable createTask1Handler() {
+    private static FlowClosure createTask1Handler() {
         return access -> {
             access.log("执行任务1");
             log.info("执行任务1: 模拟业务逻辑");
@@ -152,7 +146,7 @@ public class DslCompletableFlowExample {
     /**
      * 创建任务2处理器
      */
-    private static FlowTaskRunnable createTask2Handler() {
+    private static FlowClosure createTask2Handler() {
         return access -> {
             access.log("执行任务2");
             log.info("执行任务2: 模拟业务逻辑");
@@ -171,7 +165,7 @@ public class DslCompletableFlowExample {
     /**
      * 创建任务进入处理器
      */
-    private static FlowTaskEnterHandingRunnable createTaskEnterHandler(String taskName) {
+    private static FlowClosure createTaskEnterHandler(String taskName) {
         return access -> {
             access.log("进入任务: " + taskName);
             log.info("进入任务: {}", taskName);
@@ -181,10 +175,10 @@ public class DslCompletableFlowExample {
     /**
      * 创建任务错误处理器
      */
-    private static FlowTaskErrorHandingRunnable createTaskErrorHandler(String taskName) {
+    private static FlowClosure createTaskErrorHandler(String taskName) {
         return access -> {
-            access.log("任务出错: " + taskName + ", 错误: " + access.getException().getMessage());
-            log.error("任务错误: {}, 错误: {}", taskName, access.getException().getMessage());
+            access.log("任务出错: " + taskName);
+            log.error("任务错误: {}", taskName);
         };
     }
     

@@ -2,13 +2,7 @@ package source.hanger.flow.dsl
 
 import groovy.transform.Internal
 import source.hanger.flow.contract.model.TaskStepDefinition
-import source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicateAccess
-import source.hanger.flow.contract.runtime.task.access.FlowTaskEnterHandingAccess
-import source.hanger.flow.contract.runtime.task.access.FlowTaskErrorHandlingAccess
-import source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess
-import source.hanger.flow.contract.runtime.task.function.FlowTaskEnterHandingRunnable
-import source.hanger.flow.contract.runtime.task.function.FlowTaskErrorHandingRunnable
-import source.hanger.flow.contract.runtime.task.function.FlowTaskRunnable
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess
 import source.hanger.flow.dsl.hint.TaskHint
 import source.hanger.flow.util.ClosureUtils
 
@@ -65,17 +59,10 @@ class TaskBuilder implements TaskHint {
      * 定义任务进入时的处理逻辑
      * @param enterClosure Groovy闭包，最终封装为Java接口
      */
-    void onEnter(@DelegatesTo(value = FlowTaskEnterHandingAccess, strategy = DELEGATE_FIRST) Closure<?> enterClosure) {
+    void onEnter(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> enterClosure) {
         // 适配闭包的执行逻辑为java的实现
         ensureSingleDefinition(hasOnEnterDefined, "task.onEnter", {
-            taskStepDefinition.enterHandingRunnable = new FlowTaskEnterHandingRunnable() {
-                @Override
-                void handle(FlowTaskEnterHandingAccess access) {
-                    enterClosure.delegate = access
-                    enterClosure.resolveStrategy = DELEGATE_FIRST
-                    enterClosure.call()
-                }
-            }
+            taskStepDefinition.enterHandingRunnable = ClosureUtils.toFlowClosure(enterClosure)
         })
     }
 
@@ -84,17 +71,10 @@ class TaskBuilder implements TaskHint {
      * 定义任务的核心执行逻辑
      * @param runClosure Groovy闭包，最终封装为Java接口
      */
-    void run(@DelegatesTo(value = FlowTaskRunAccess, strategy = DELEGATE_FIRST) Closure<?> runClosure) {
+    void run(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> runClosure) {
         // 适配闭包的执行逻辑为java的实现
         ensureSingleDefinition(hasRunDefined, "task.run", {
-            taskStepDefinition.taskRunnable = new FlowTaskRunnable() {
-                @Override
-                void run(FlowTaskRunAccess access) {
-                    runClosure.delegate = access
-                    runClosure.resolveStrategy = DELEGATE_FIRST
-                    runClosure.call()
-                }
-            }
+            taskStepDefinition.taskRunnable = ClosureUtils.toFlowClosure(runClosure)
         })
     }
 
@@ -104,7 +84,7 @@ class TaskBuilder implements TaskHint {
      * @param conditionClosure 条件闭包
      * @return NextBuilder 用于链式指定跳转目标
      */
-    NextBuilder next(@DelegatesTo(value = FlowRuntimePredicateAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure) {
+    NextBuilder next(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure) {
         return new NextBuilder(taskStepDefinition, conditionClosure) // next 的目标是 FlowBuilder 管理的节点
     }
 
@@ -123,16 +103,9 @@ class TaskBuilder implements TaskHint {
      * @param errorClosure Groovy闭包，最终封装为Java接口
      * @return NextBuilder 用于链式指定错误跳转目标
      */
-    NextBuilder onError(@DelegatesTo(value = FlowTaskErrorHandlingAccess, strategy = DELEGATE_FIRST) Closure<?> errorClosure) {
+    NextBuilder onError(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> errorClosure) {
         ensureSingleDefinition(hasOnErrorDefined, "Flow.onError", {
-            taskStepDefinition.errorHandingRunnable = new FlowTaskErrorHandingRunnable() {
-                @Override
-                void handle(FlowTaskErrorHandlingAccess access) {
-                    errorClosure.delegate = access
-                    errorClosure.resolveStrategy = DELEGATE_FIRST
-                    errorClosure.call()
-                }
-            }
+            taskStepDefinition.errorHandingRunnable = ClosureUtils.toFlowClosure(errorClosure)
         })
         next ClosureUtils.TRUE
     }

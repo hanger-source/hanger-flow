@@ -2,9 +2,9 @@ package source.hanger.flow.completable.runtime;
 
 import source.hanger.flow.contract.model.FlowDefinition;
 import source.hanger.flow.contract.model.TaskStepDefinition;
-import source.hanger.flow.contract.runtime.task.function.FlowTaskRunnable;
-import source.hanger.flow.core.runtime.FlowResult;
-import source.hanger.flow.core.runtime.FlowStatus;
+import source.hanger.flow.contract.runtime.common.FlowClosure;
+import source.hanger.flow.core.runtime.execution.FlowResult;
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,7 +68,7 @@ public class ModuleStructureTest {
         FlowDefinition flow = createTestFlow();
         
         // 执行流程
-        Map<String, Serializable> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         params.put("testParam", "testValue");
         
         CompletableFuture<FlowResult> future = engine.execute(flow, params);
@@ -119,10 +119,10 @@ public class ModuleStructureTest {
         TaskStepDefinition task = new TaskStepDefinition();
         task.setName("结构测试任务");
         task.setDescription("测试模块结构的任务步骤");
-        task.setTaskRunnable(new FlowTaskRunnable() {
+        task.setTaskRunnable(new FlowClosure() {
             @Override
-            public void run(source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess access) {
-                logger.info("[ModuleStructureTest] 执行结构测试任务");
+            public void call(FlowRuntimeExecuteAccess access) {
+                ModuleStructureTest.logger.info("[ModuleStructureTest] 执行结构测试任务");
                 access.log("模块结构测试任务执行完成");
             }
         });

@@ -1,10 +1,8 @@
 package source.hanger.flow.dsl.hint
 
-import groovy.transform.CompileStatic
-import source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicateAccess
-import source.hanger.flow.contract.runtime.task.access.FlowTaskEnterHandingAccess
-import source.hanger.flow.contract.runtime.task.access.FlowTaskErrorHandlingAccess
-import source.hanger.flow.contract.runtime.task.access.FlowTaskRunAccess
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess
+import source.hanger.flow.contract.runtime.common.FlowClosure
+import source.hanger.flow.contract.runtime.common.FlowRuntimePredicate
 
 import static groovy.lang.Closure.DELEGATE_FIRST
 
@@ -34,7 +32,6 @@ import static groovy.lang.Closure.DELEGATE_FIRST
  *   - 便于后续扩展新的任务级DSL语法
  *   - 强制所有task DSL实现都必须支持这些语法
  */
-@CompileStatic
 trait TaskHint {
     /**
      * DSL关键词：name
@@ -55,14 +52,14 @@ trait TaskHint {
      * 定义任务进入时的处理逻辑
      * @param c 处理闭包，委托为FlowTaskEnterHandingAccess
      */
-    abstract void onEnter(@DelegatesTo(value = FlowTaskEnterHandingAccess, strategy = DELEGATE_FIRST) Closure<?> c)
+    abstract void onEnter(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> c)
 
     /**
      * DSL关键词：run
      * 定义任务的核心执行逻辑
      * @param runClosure 执行闭包，委托为FlowTaskRunAccess
      */
-    abstract void run(@DelegatesTo(value = FlowTaskRunAccess, strategy = DELEGATE_FIRST) Closure<?> runClosure)
+    abstract void run(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> runClosure)
 
     /**
      * DSL关键词：next
@@ -70,7 +67,7 @@ trait TaskHint {
      * @param conditionClosure 条件闭包，委托为FlowRuntimePredicateAccess
      * @return NextHint 用于链式指定跳转目标
      */
-    abstract NextHint next(@DelegatesTo(value = FlowRuntimePredicateAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure)
+    abstract NextHint next(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> conditionClosure)
 
     /**
      * DSL关键词：nextTo
@@ -85,5 +82,5 @@ trait TaskHint {
      * @param c 错误处理闭包，委托为FlowTaskErrorHandlingAccess
      * @return NextHint 用于链式指定错误跳转目标
      */
-    abstract NextHint onError(@DelegatesTo(value = FlowTaskErrorHandlingAccess, strategy = DELEGATE_FIRST) Closure<?> c)
+    abstract NextHint onError(@DelegatesTo(value = FlowRuntimeExecuteAccess, strategy = DELEGATE_FIRST) Closure<?> c)
 }

@@ -1,27 +1,45 @@
 package source.hanger.flow.util
 
-import source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicate
-import source.hanger.flow.contract.runtime.common.predicate.FlowRuntimePredicateAccess
+import source.hanger.flow.contract.runtime.common.FlowRuntimePredicate
+import source.hanger.flow.contract.runtime.common.FlowRuntimeExecuteAccess
+import source.hanger.flow.contract.runtime.common.FlowClosure
+
+import static groovy.lang.Closure.DELEGATE_FIRST
 
 /**
- * @author fuhangbo.hanger.uhfun
- * */
+ * 闭包工具类
+ * 提供闭包相关的工具方法
+ */
 class ClosureUtils {
 
+    /** 始终返回true的闭包 */
     public static final Closure<?> TRUE = { true }
 
-    static FlowRuntimePredicate defaultFlowRuntimePredicate(Closure<?> booleanClosure) {
+    /**
+     * 将闭包转换为FlowRuntimePredicate
+     */
+    static FlowRuntimePredicate toFlowRuntimePredicate(Closure<?> closure) {
         return new FlowRuntimePredicate() {
             @Override
-            boolean test(FlowRuntimePredicateAccess access) {
-                booleanClosure.setDelegate(access)
-                booleanClosure.setResolveStrategy(Closure.DELEGATE_FIRST)
-                def result = booleanClosure.call()
-                if (!(result instanceof Boolean)) {
-                    throw new IllegalArgumentException("Condition closure must return a boolean value, but returned: ${result?.getClass()?.name} (${result})")
-                }
-                return (boolean) result
+            boolean test(FlowRuntimeExecuteAccess access) {
+                closure.delegate = access
+                closure.resolveStrategy = DELEGATE_FIRST
+                closure.call()
             }
         }
     }
-}
+
+    /**
+     * 将闭包转换为FlowClosure
+     */
+    static FlowClosure toFlowClosure(Closure<?> closure) {
+        return new FlowClosure() {
+            @Override
+            void call(FlowRuntimeExecuteAccess access) {
+                closure.delegate = access
+                closure.resolveStrategy = DELEGATE_FIRST
+                closure.call()
+            }
+        }
+    }
+} 

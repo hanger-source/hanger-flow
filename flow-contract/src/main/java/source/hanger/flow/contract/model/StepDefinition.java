@@ -33,4 +33,29 @@ public interface StepDefinition {
      * @param transition 错误处理流转条件
      */
     void setErrorTransition(Transition transition);
+
+    /**
+     * 是否支持流式输出（fragment/done/error）
+     *
+     * @return true表示支持流式输出，false为传统模式
+     */
+    default boolean isStreamingSupported() {
+        return false;
+    }
+
+    /**
+     * 获取步骤输出的数据类型（如String.class、POJO.class等）
+     *
+     * @return 输出类型Class
+     */
+    default Class<?> getOutputType() {
+        return Object.class;
+    }
+
+    /**
+     * 获取步骤类型
+     *
+     * @return 步骤类型枚举
+     */
+    StepType getStepType();
 }
